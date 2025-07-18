@@ -1,40 +1,66 @@
-// src/pages/MyPage.jsx
 import { useState, useEffect } from 'react';
 import apiClient from '../api/axios';
-import { Container, Box, Typography, Paper, CircularProgress } from '@mui/material';
+import useNotificationStore from '../store/notificationStore';
+import {
+  Container,
+  Box,
+  Typography,
+  Paper,
+  CircularProgress,
+  Button,
+  Stack,
+  TextField,
+} from '@mui/material';
 
 function MyPage() {
-  const [user, setUser] = useState(null); // 사용자 정보를 담을 state
-  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false); // 수정 모드 상태
+  const [editName, setEditName] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const { showNotification } = useNotificationStore();
+
+  // 사용자 정보 불러오기
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get('/users/me');
+      setUser(response.data);
+      setEditName(response.data.name); // 수정 필드 초기값 설정
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      showNotification('사용자 정보를 불러오는 데 실패했습니다.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // 페이지가 렌더링될 때 한 번만 실행되는 함수
-    const fetchUserData = async () => {
-      try {
-        // API 명세서의 '내 정보 조회' API 호출
-        const response = await apiClient.get('/users/me');
-        setUser(response.data); // 성공 시 사용자 정보를 state에 저장
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-        alert('사용자 정보를 불러오는 데 실패했습니다.');
-      } finally {
-        setLoading(false); // 로딩 완료
-      }
-    };
-
     fetchUserData();
-  }, []); // 빈 배열을 전달하여 최초 렌더링 시에만 실행되도록 함
+  }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // 정보 저장 핸들러
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      // API 명세서에는 없지만, 보통 이런 형태로 요청
+      const payload = { name: editName };
+      if (editPassword) {
+        payload.password = editPassword;
+      }
+      await apiClient.patch('/users/me', payload);
+      showNotification('정보가 성공적으로 수정되었습니다.', 'success');
+      setIsEditing(false);
+      fetchUserData(); // 수정된 정보를 다시 불러오기
+    } catch (error) {
+      showNotification('정보 수정에 실패했습니다.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (!user) {
-    return <Typography>사용자 정보를 찾을 수 없습니다.</Typography>;
+  if (loading && !isEditing) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   }
 
   return (
@@ -43,11 +69,51 @@ function MyPage() {
         <Typography component="h1" variant="h4" gutterBottom>
           내 정보
         </Typography>
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">이름: {user.name}</Typography>
-          <Typography variant="h6" sx={{ mt: 1 }}>이메일: {user.email}</Typography>
-          <Typography variant="h6" sx={{ mt: 1 }}>역할: {user.role}</Typography>
-        </Box>
+        {isEditing ? (
+          // --- 수정 모드 ---
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              label="이름"
+              fullWidth
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+            />
+            <TextField
+              label="새 비밀번호 (선택)"
+              type="password"
+              fullWidth
+              placeholder="변경할 경우에만 입력하세요"
+              value={editPassword}
+              onChange={(e) => setEditPassword(e.target.value)}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+              <Button variant="outlined" onClick={() => setIsEditing(false)}>
+                취소
+              </Button>
+              <Button variant="contained" onClick={handleSave} disabled={loading}>
+                {loading ? <CircularProgress size={24} /> : '저장'}
+              </Button>
+            </Box>
+          </Stack>
+        ) : (
+          // --- 보기 모드 ---
+          <Box sx={{ mt: 2 }}>
+            {user ? (
+              <>
+                <Typography variant="h6">이름: {user.name}</Typography>
+                <Typography variant="h6" sx={{ mt: 1 }}>이메일: {user.email}</Typography>
+                <Typography variant="h6" sx={{ mt: 1 }}>역할: {user.role}</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                  <Button variant="contained" onClick={() => setIsEditing(true)}>
+                    정보 수정
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <Typography>사용자 정보를 찾을 수 없습니다.</Typography>
+            )}
+          </Box>
+        )}
       </Paper>
     </Container>
   );

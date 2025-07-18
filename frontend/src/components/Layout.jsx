@@ -1,14 +1,14 @@
-// src/components/Layout.jsx
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
+import GlobalSnackbar from './GlobalSnackbar'; // Snackbar import
 
 function Layout() {
   return (
     <div>
       <Header />
+      <GlobalSnackbar /> {/* 앱 전체에 알림을 띄우기 위해 여기에 추가 */}
       <main>
-        {/* 이 부분에 각 페이지의 내용이 렌더링됩니다. */}
-        <Outlet /> 
+        <Outlet />
       </main>
     </div>
   );

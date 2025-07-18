@@ -1,7 +1,7 @@
 import { useState } from 'react';
-// useNavigate와 함께 react-router-dom의 Link를 RouterLink라는 별명으로 가져옵니다.
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import useAuthStore from '../store/authStore'; // Zustand 스토어
+import useAuthStore from '../store/authStore';
+import useNotificationStore from '../store/notificationStore'; // 알림 스토어 import
 import {
   Container,
   Box,
@@ -9,27 +9,30 @@ import {
   TextField,
   Button,
   Grid,
-  Link, // MUI의 Link 컴포넌트
+  Link,
+  CircularProgress, // 로딩 스피너 import
 } from '@mui/material';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
   const navigate = useNavigate();
-  const { login } = useAuthStore(); // Zustand 스토어의 login 함수 가져오기
+  const { login } = useAuthStore();
+  const { showNotification } = useNotificationStore(); // 알림 함수 가져오기
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setLoading(true); // 로딩 시작
     try {
-      // API 호출은 직접 하지 않고, 스토어의 login 함수를 통해 처리
       await login(email, password);
-
-      alert('로그인 되었습니다.');
-      navigate('/posts'); // 로그인 성공 시 게시판 페이지로 이동
+      showNotification('로그인 되었습니다.', 'success'); // 성공 알림
+      navigate('/posts');
     } catch (error) {
-      alert('이메일 또는 비밀번호가 일치하지 않습니다.');
+      showNotification('이메일 또는 비밀번호가 일치하지 않습니다.', 'error'); // 실패 알림
       console.error('Login error:', error);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
@@ -76,18 +79,13 @@ function LoginPage() {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            disabled={loading} // 로딩 중일 때 버튼 비활성화
           >
-            로그인
+            {loading ? <CircularProgress size={24} color="inherit" /> : '로그인'}
           </Button>
-          {/* --- 아래 Grid 부분을 수정했습니다. --- */}
           <Grid container justifyContent="flex-end" columnGap={2}>
-            {/* 'item'과 'xs' prop을 제거하고, component와 to 속성을 사용합니다. */}
             <Grid>
-              <Link
-                component={RouterLink}
-                to="/request-password-reset"
-                variant="body2"
-              >
+              <Link component={RouterLink} to="/request-password-reset" variant="body2">
                 비밀번호를 잊으셨나요?
               </Link>
             </Grid>
