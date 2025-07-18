@@ -1,3 +1,4 @@
+// src/pages/SignupPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/axios';
@@ -23,6 +24,17 @@ function SignupPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // --- 유효성 검사 로직 추가 ---
+    if (!email.includes('@')) {
+      alert('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+    if (password.length < 6) {
+      alert('비밀번호는 6자 이상이어야 합니다.');
+      return;
+    }
+    // --------------------------
 
     if (!agreeTerms) {
       alert('약관에 동의해주세요.');
