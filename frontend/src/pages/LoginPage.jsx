@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// useNavigate와 함께 react-router-dom의 Link를 RouterLink라는 별명으로 가져옵니다.
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import useAuthStore from '../store/authStore'; // Zustand 스토어
 import {
   Container,
@@ -8,7 +9,7 @@ import {
   TextField,
   Button,
   Grid,
-  Link,
+  Link, // MUI의 Link 컴포넌트
 } from '@mui/material';
 
 function LoginPage() {
@@ -78,15 +79,21 @@ function LoginPage() {
           >
             로그인
           </Button>
+          {/* --- 아래 Grid 부분을 수정했습니다. --- */}
           <Grid container justifyContent="flex-end" columnGap={2}>
-            <Grid item xs>
-              <Link href="#" variant="body2">
+            {/* 'item'과 'xs' prop을 제거하고, component와 to 속성을 사용합니다. */}
+            <Grid>
+              <Link
+                component={RouterLink}
+                to="/request-password-reset"
+                variant="body2"
+              >
                 비밀번호를 잊으셨나요?
               </Link>
             </Grid>
-            <Grid item>
-              <Link href="/signup" variant="body2">
-                    계정이 없으신가요? 
+            <Grid>
+              <Link component={RouterLink} to="/signup" variant="body2">
+                계정이 없으신가요? 회원가입
               </Link>
             </Grid>
           </Grid>

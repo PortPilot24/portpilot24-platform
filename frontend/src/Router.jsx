@@ -4,7 +4,9 @@ import Layout from './components/Layout';
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import MyPage from './pages/MyPage';
-import ProtectedRoute from './components/ProtectedRoute'; // ProtectedRoute import
+import ProtectedRoute from './components/ProtectedRoute';
+import PasswordRequestPage from './pages/PasswordRequestPage';
+import PasswordResetPage from './pages/PasswordResetPage'; // 비밀번호 변경 페이지 import 추가
 
 function Router() {
   return (
@@ -18,6 +20,8 @@ function Router() {
           {/* 누구나 접근 가능한 페이지 */}
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/request-password-reset" element={<PasswordRequestPage />} />
+          <Route path="/reset-password" element={<PasswordResetPage />} />
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
