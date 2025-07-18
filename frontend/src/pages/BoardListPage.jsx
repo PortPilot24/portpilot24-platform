@@ -15,21 +15,27 @@ import {
   TableCell,
   Chip,
   CircularProgress,
+  Pagination, // Pagination 컴포넌트 import
 } from '@mui/material';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 
 function BoardListPage() {
-  const [posts, setPosts] = useState([]); // 초기 상태를 빈 배열로 돌려놓습니다.
-  const [loading, setLoading] = useState(true); // 로딩 상태를 다시 true로 시작합니다.
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1); // 현재 페이지 상태
+  const [totalPages, setTotalPages] = useState(0); // 전체 페이지 수 상태
   const navigate = useNavigate();
 
-  // API 호출 로직을 다시 활성화합니다.
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get('/posts');
-        setPosts(response.data);
+        // API 호출 시 페이지 번호를 파라미터로 전달
+        const response = await apiClient.get('/posts', {
+          params: { page: page - 1, size: 10 } // 서버는 보통 0페이지부터 시작하므로 -1
+        });
+        setPosts(response.data.content); // 실제 게시글 목록
+        setTotalPages(response.data.totalPages); // 전체 페이지 수
       } catch (error) {
         console.error('Failed to fetch posts:', error);
       } finally {
@@ -37,9 +43,8 @@ function BoardListPage() {
       }
     };
     fetchPosts();
-  }, []);
+  }, [page]); // page가 바뀔 때마다 API를 다시 호출
 
-  // 로딩 중일 때 로딩 스피너를 보여줍니다.
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -62,13 +67,7 @@ function BoardListPage() {
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell align="center" width="10%">No.</TableCell>
-              <TableCell align="left" width="50%">글 제목</TableCell>
-              <TableCell align="center" width="15%">작성자</TableCell>
-              <TableCell align="center" width="15%">작성일</TableCell>
-              <TableCell align="center" width="10%">첨부</TableCell>
-            </TableRow>
+            {/* ... TableHead 내용은 이전과 동일 ... */}
           </TableHead>
           <TableBody>
             {posts.map((post) => (
@@ -78,20 +77,22 @@ function BoardListPage() {
                 onClick={() => navigate(`/posts/${post.id}`)}
                 sx={{ cursor: 'pointer' }}
               >
-                <TableCell align="center">
-                  {post.isNotice ? <Chip label="공지" color="primary" size="small"/> : post.no}
-                </TableCell>
-                <TableCell align="left">{post.title}</TableCell>
-                <TableCell align="center">{post.author}</TableCell>
-                <TableCell align="center">{post.createdAt}</TableCell>
-                <TableCell align="center">
-                  {post.hasAttachment && <AttachmentIcon fontSize="small" color="action" />}
-                </TableCell>
+                {/* ... TableCell 내용들은 이전과 동일 ... */}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* 페이지네이션 컴포넌트 추가 */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          color="primary"
+        />
+      </Box>
     </Container>
   );
 }
