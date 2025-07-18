@@ -78,7 +78,7 @@ function LoginPage() {
           >
             로그인
           </Button>
-          <Grid container>
+          <Grid container justifyContent="flex-end" columnGap={2}>
             <Grid item xs>
               <Link href="#" variant="body2">
                 비밀번호를 잊으셨나요?
@@ -86,7 +86,7 @@ function LoginPage() {
             </Grid>
             <Grid item>
               <Link href="/signup" variant="body2">
-                계정이 없으신가요? 회원가입
+                    계정이 없으신가요? 
               </Link>
             </Grid>
           </Grid>
