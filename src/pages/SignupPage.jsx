@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/axios';
+import PrivacyPolicy from '../components/PrivacyPolicy'; // ✅ 동의 컴포넌트 import
+
 import {
   Container,
   Box,
@@ -16,6 +18,7 @@ import {
 } from '@mui/material';
 
 function SignupPage() {
+  const [agreed, setAgreed] = useState(false); // ✅ 개인정보 동의 여부
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +28,6 @@ function SignupPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // --- 유효성 검사 로직 추가 ---
     if (!email.includes('@')) {
       alert('올바른 이메일 형식이 아닙니다.');
       return;
@@ -34,10 +36,8 @@ function SignupPage() {
       alert('비밀번호는 6자 이상이어야 합니다.');
       return;
     }
-    // --------------------------
-
     if (!agreeTerms) {
-      alert('약관에 동의해주세요.');
+      alert('이용약관에 동의해주세요.');
       return;
     }
 
@@ -56,6 +56,11 @@ function SignupPage() {
       console.error('Signup error:', error);
     }
   };
+
+  // ✅ 개인정보 동의 페이지 먼저 보여주기
+  if (!agreed) {
+    return <PrivacyPolicy onAgree={() => setAgreed(true)} />;
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -125,7 +130,7 @@ function SignupPage() {
             가입하기
           </Button>
           <Grid container justifyContent="flex-end">
-            <Grid>
+            <Grid item>
               <Link href="/login" variant="body2">
                 이미 계정이 있으신가요? 로그인
               </Link>
