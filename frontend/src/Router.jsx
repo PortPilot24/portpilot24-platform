@@ -12,6 +12,7 @@ import PostDetailPage from './pages/PostDetailPage';
 import PostFormPage from './pages/PostFormPage';
 import DashboardPage from './pages/DashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
+import PredictainerPage from './pages/PredictainerPage';
 
 
 function Router() {
@@ -33,6 +34,7 @@ function Router() {
             <Route path="/posts/new" element={<PostFormPage />} />
             <Route path="/posts/:id" element={<PostDetailPage />} />
             <Route path="/posts/:id/edit" element={<PostFormPage />} />
+            <Route path="/predictainer" element={<PredictainerPage />} />
           </Route>
 
           {/* 관리자만 접근 가능한 페이지 */}
