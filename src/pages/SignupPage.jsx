@@ -1,145 +1,141 @@
 // src/pages/SignupPage.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/axios';
-import PrivacyPolicy from '../components/PrivacyPolicy'; // ✅ 동의 컴포넌트 import
-
+import React, { useState } from "react";
 import {
-  Container,
   Box,
+  Paper,
+  Avatar,
   Typography,
   TextField,
   Button,
   FormControlLabel,
   Checkbox,
-  Grid,
   Link,
-  Stack,
-} from '@mui/material';
+} from "@mui/material";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 
-function SignupPage() {
-  const [agreed, setAgreed] = useState(false); // ✅ 개인정보 동의 여부
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const navigate = useNavigate();
+export default function SignupPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [agree, setAgree] = useState(false);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!email.includes('@')) {
-      alert('올바른 이메일 형식이 아닙니다.');
-      return;
-    }
-    if (password.length < 6) {
-      alert('비밀번호는 6자 이상이어야 합니다.');
-      return;
-    }
-    if (!agreeTerms) {
-      alert('이용약관에 동의해주세요.');
-      return;
-    }
-
-    try {
-      await apiClient.post('/users/signup', {
-        name,
-        email,
-        password,
-        agreeTerms,
-      });
-
-      alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
-      navigate('/login');
-    } catch (error) {
-      alert('회원가입 중 오류가 발생했습니다.');
-      console.error('Signup error:', error);
-    }
+  const handleSignup = () => {
+    // TODO: 회원가입 API 호출
+    console.log({ name, email, password, agree });
   };
 
-  // ✅ 개인정보 동의 페이지 먼저 보여주기
-  if (!agreed) {
-    return <PrivacyPolicy onAgree={() => setAgreed(true)} />;
-  }
-
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",  // AppBar 높이(64px) 제외
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+        backgroundImage: `url("/assets/port-bg.jpg")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <Paper
+        elevation={8}
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          width: "100%",
+          maxWidth: 700,
+          p: 6,
+          bgcolor: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(4px)",
+          borderRadius: 3,
         }}
       >
-        <Typography component="h1" variant="h5">
-          회원가입
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 3 }}>
-          <Stack spacing={2}>
-            <TextField
-              autoComplete="name"
-              name="name"
-              required
-              fullWidth
-              id="name"
-              label="이름"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              required
-              fullWidth
-              id="email"
-              label="이메일 주소"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              required
-              fullWidth
-              name="password"
-              label="비밀번호"
-              type="password"
-              id="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value="allowExtraEmails"
-                  color="primary"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                />
-              }
-              label="이용약관 및 개인정보 처리 방침에 동의합니다."
-            />
-          </Stack>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+        {/* 헤더 영역 */}
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Avatar
+            sx={{
+              m: "auto",
+              bgcolor: "primary.main",
+              width: 80,
+              height: 80,
+            }}
           >
-            가입하기
-          </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link href="/login" variant="body2">
-                이미 계정이 있으신가요? 로그인
-              </Link>
-            </Grid>
-          </Grid>
+            <DirectionsBoatIcon fontSize="large" />
+          </Avatar>
+          <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold" }}>
+            PortPilot24
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            지능형 항만 운영 플랫폼
+          </Typography>
+          <Typography variant="h6" sx={{ mt: 2, fontWeight: "medium" }}>
+            회원가입
+          </Typography>
         </Box>
-      </Box>
-    </Container>
+
+        {/* 입력 폼 */}
+        <TextField
+          label="이름"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="이메일 주소"
+          type="email"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          label="비밀번호"
+          type="password"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+            />
+          }
+          label="이용약관 및 개인정보 처리 방침에 동의합니다."
+          sx={{ mt: 2 }}
+        />
+
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 3, py: 2, fontWeight: "bold", fontSize: "1.1rem" }}
+          onClick={handleSignup}
+          disabled={!agree}
+        >
+          가입하기
+        </Button>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ mr: 1 }}>
+            이미 계정이 있으신가요?
+          </Typography>
+          <Link href="/login" variant="body2" underline="hover">
+            로그인
+          </Link>
+        </Box>
+      </Paper>
+    </Box>
   );
 }
-
-export default SignupPage;
