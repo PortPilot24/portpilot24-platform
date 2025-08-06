@@ -1,7 +1,7 @@
 package com.example.post.dto;
 
 import java.time.LocalDateTime;
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PostDTO {
 
-    private Long postId;
-    private Long userId;
+    private Long id;
     private String name;
     private String title;
     private String content;
@@ -28,16 +27,15 @@ public class PostDTO {
     // private int fileAttached;
 
     // 엔티티의 데이터를 DTO에 넣을때 사용할 함수
-    public static PostDTO toPostDTO(PostEntity postEntity){
+    public static PostDTO toPostDTO(Post post){
         PostDTO postDTO = new PostDTO();
-        postDTO.setPostId(postEntity.getPostId());
-        postDTO.setUserId(postEntity.getUserId());
-        postDTO.setName(postEntity.getName());
-        postDTO.setTitle(postEntity.getTitle());
-        postDTO.setContent(postEntity.getContent());
-        postDTO.setIsNotice(postEntity.getIsNotice());
-        postDTO.setCreatedAt(postEntity.getCreatedAt());
-        postDTO.setUpdatedAt(postEntity.getUpdatedAt());
+        postDTO.setId(post.getId());
+        postDTO.setName(post.getUser().getName());
+        postDTO.setTitle(post.getTitle());
+        postDTO.setContent(post.getContent());
+        postDTO.setIsNotice(post.getIsNotice());
+        postDTO.setCreatedAt(post.getCreatedAt());
+        postDTO.setUpdatedAt(post.getUpdatedAt());
 
         // 첨부파일 유무를 확인하던 함수.
         // if(postEntity.getFileAttached() == 0){

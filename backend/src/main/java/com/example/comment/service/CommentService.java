@@ -1,7 +1,7 @@
 package com.example.comment.service;
 
-import com.example.post.domain.PostEntity;
-import com.example.post.repository.postRepository;
+import com.example.post.domain.Post;
+import com.example.post.repository.PostRepository;
 import com.example.comment.domain.Comment;
 import com.example.comment.repository.CommentRepository;
 import com.example.user.domain.User;
@@ -16,10 +16,10 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final postRepository PostRepository;
+    private final PostRepository PostRepository;
     private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository, postRepository PostRepository,
+    public CommentService(CommentRepository commentRepository, PostRepository PostRepository,
                           UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.PostRepository = PostRepository;
@@ -30,7 +30,7 @@ public class CommentService {
      * 댓글 작성
      */
     public Comment createComment(Long postId, Long userId, String content) {
-        PostEntity post = PostRepository.findById(postId)
+        Post post = PostRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
         User user = userRepository.findById(userId)

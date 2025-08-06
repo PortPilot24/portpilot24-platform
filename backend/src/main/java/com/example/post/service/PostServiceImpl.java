@@ -2,37 +2,44 @@ package com.example.post.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+import com.example.post.domain.PostFile;
+import com.example.post.repository.PostFileRepository;
+import com.example.user.domain.User;
+import jakarta.annotation.PostConstruct;
 import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 // import com.example.post.domain.PostFileEntity;
 import com.example.post.dto.PostDTO;
-import com.example.post.repository.postPagingRepository;
+import com.example.post.repository.PostPagingRepository;
 // import com.example.post.repository.postFileRepository;
-import com.example.post.repository.postRepository;
+import com.example.post.repository.PostRepository;
 
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostServiceImpl implements PostService {
 
-    private final postRepository postRepository;
-    private final postPagingRepository postPagingRepository;
+    private final PostRepository postRepository;
+    private final PostPagingRepository postPagingRepository;
     // private final FileStorageService fileStorageService;
 
-    // private final postFileRepository postFileRepository;
+    private final PostFileRepository postFileRepository;
 
     // 게시글 등록(파일첨부 기능을 따로 빼기 전)
     // @Override
@@ -80,18 +87,93 @@ public class PostServiceImpl implements PostService {
     //     return postRepository.save(post);
     // }
 
+    @PostConstruct
+    public void initUploadDir() {
+        String baseUploadPath;
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os.contains("win")) {
+            baseUploadPath = "c:/upload/temp/";
+        } else {
+            baseUploadPath = "/var/upload/temp/"; // Linux 기준 (적절한 디렉토리로 바꿔도 됨)
+        }
+
+        File dir = new File(baseUploadPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+            System.out.println("업로드 디렉토리 생성됨: " + baseUploadPath);
+        }
+    }
 
     @Override
+    @Transactional
     public void insertPost(String title, String content) {
-        PostEntity postEntity = new PostEntity();
-        postEntity.setTitle(title);
-        postEntity.setContent(content);
+        Post post = new Post();
+        post.setTitle(title);
+        post.setContent(content);
 
-        postRepository.save(postEntity);
+        postRepository.save(post);
     }
+
+    @Override
+    @Transactional
+    public Long insertPost(String title, String content, List<MultipartFile> files, User user) throws IOException {
+        // 1. 게시글 저장 (예: Post 객체 저장) → postId 확보
+        Post post = new Post();
+        post.setUser(user);
+        post.setTitle(title);
+        post.setContent(content);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+        Post savedPost = postRepository.save(post);
+
+        // 2. 파일 저장
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    String extension = Optional.ofNullable(originalFilename)
+                            .filter(f -> f.contains("."))
+                            .map(f -> f.substring(originalFilename.lastIndexOf(".")))
+                            .orElse("");
+
+                    String baseUploadPath;
+                    String os = System.getProperty("os.name").toLowerCase();
+
+                    if (os.contains("win")) {
+                        baseUploadPath = "c:/upload/temp/";
+                    } else {
+                        baseUploadPath = "/var/upload/temp/"; // Linux 기준 (적절한 디렉토리로 바꿔도 됨)
+                    }
+
+                    // 저장 파일명 생성 (UUID 등으로 유니크하게)
+                    String storedFilename = UUID.randomUUID().toString() + extension;
+                    String uploadPath = baseUploadPath + storedFilename;
+
+                    // 파일 저장
+                    File dest = new File(uploadPath);
+                    file.transferTo(dest);
+
+                    // DB에 파일 메타데이터 저장
+                    PostFile postFile = new PostFile();
+                    postFile.setPost(post);
+                    postFile.setOriginalFilename(originalFilename);
+                    postFile.setStoredFilename(storedFilename);
+                    postFile.setFilePath(uploadPath);
+                    postFile.setFileSize(file.getSize());
+
+                    postFileRepository.save(postFile);
+                }
+            }
+        }
+
+        return savedPost.getId();
+    }
+
 
     //파일 업로드 기능(아직 로직 추가 안함)
     @Override
+    @Transactional
     public void uploadFile(List<MultipartFile> files) throws IOException {
 
             // 서버에 저장할 이름을 따로 지정
@@ -116,30 +198,29 @@ public class PostServiceImpl implements PostService {
     
     //전체 게시글 조회
     @Override
-    @Transactional
     public List<PostDTO> findPosts() {
 
-        List<PostEntity> postEntityList = postRepository.findAll();
+        List<Post> postEntityList = postRepository.findAll();
         List<PostDTO> postDTOList = new ArrayList<>();
-        for (PostEntity postEntity : postEntityList) {
-            postDTOList.add(PostDTO.toPostDTO(postEntity));
+        for (Post post : postEntityList) {
+            postDTOList.add(PostDTO.toPostDTO(post));
         }
         return postDTOList;
     }
 
     //페이징처리
     @Override
-    public Page<PostEntity> paging(Pageable pageable) {  
-        return postPagingRepository.findAll(pageable);
+    public Page<PostDTO> paging(Pageable pageable) {
+        return postPagingRepository.findAll(pageable)
+                .map(PostDTO::toPostDTO); // ✅ Lazy 필드 안전하게 처리
     }
 
     //특정 게시글 조회
     @Override
-    @Transactional
     public PostDTO findPost(Long id) {
-        Optional<PostEntity> optionalPostEntity = postRepository.findById(id);
+        Optional<Post> optionalPostEntity = postRepository.findById(id);
         if (optionalPostEntity.isPresent()) {
-            PostEntity post = optionalPostEntity.get();
+            Post post = optionalPostEntity.get();
             PostDTO postToDTO = PostDTO.toPostDTO(post);
             return postToDTO;
         } else {
@@ -153,14 +234,15 @@ public class PostServiceImpl implements PostService {
 
     //게시글 수정
     @Override
+    @Transactional
     public void updatePost(Long id, PostDTO post) throws IOException {
         
         PostDTO fixedPost = findPost(id);
         fixedPost.setTitle(post.getTitle());
         fixedPost.setContent(post.getContent());
-        fixedPost.setUpdatedAt(post.getUpdatedAt());
+        fixedPost.setUpdatedAt(LocalDateTime.now());
 
-        PostEntity postEntity = new PostEntity();
+        Post postEntity = new Post();
         postEntity = postRepository.findById(id).get();
         postEntity.setTitle(fixedPost.getTitle());
         postEntity.setContent(fixedPost.getContent());
@@ -172,6 +254,7 @@ public class PostServiceImpl implements PostService {
 
     //게시글 삭제
     @Override
+    @Transactional
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }

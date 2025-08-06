@@ -1,40 +1,42 @@
 package com.example.post.domain;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import com.example.post.dto.PostDTO;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name="postFile")
-public class PostFileEntity {
+public class PostFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_file_id")
+    private Long id;
 
-    @Column
-    private String originalFileName;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
-    @Column
-    private String savedFileName;
+    private String originalFilename;
+    private String storedFilename;
+    private String filePath;
+    private Long fileSize;
 
-    @ElementCollection
-    private List<String> filePaths;
+    private LocalDateTime uploadedAt = LocalDateTime.now();
+
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    private long id;
+//
+//    @Column
+//    private String originalFileName;
+//
+//    @Column
+//    private String savedFileName;
+//
+//    @ElementCollection
+//    private List<String> filePaths;
     
     // 파일을 서버 로컬에 저장할 경우 35~36라인 제거
     // @Column
