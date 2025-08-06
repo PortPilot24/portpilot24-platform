@@ -203,7 +203,7 @@ public class PostServiceImpl implements PostService {
         List<Post> postEntityList = postRepository.findAll();
         List<PostDTO> postDTOList = new ArrayList<>();
         for (Post post : postEntityList) {
-            postDTOList.add(PostDTO.toPostDTO(post));
+            postDTOList.add(PostDTO.toPostDTO(post, null));
         }
         return postDTOList;
     }
@@ -212,7 +212,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<PostDTO> paging(Pageable pageable) {
         return postPagingRepository.findAll(pageable)
-                .map(PostDTO::toPostDTO); // ✅ Lazy 필드 안전하게 처리
+                .map(post -> PostDTO.toPostDTO(post, null)); // ✅ Lazy 필드 안전하게 처리
     }
 
     //특정 게시글 조회
@@ -221,7 +221,8 @@ public class PostServiceImpl implements PostService {
         Optional<Post> optionalPostEntity = postRepository.findById(id);
         if (optionalPostEntity.isPresent()) {
             Post post = optionalPostEntity.get();
-            PostDTO postToDTO = PostDTO.toPostDTO(post);
+            PostFile postFile = postFileRepository.findByPostId(post.getId());
+            PostDTO postToDTO = PostDTO.toPostDTO(post, postFile);
             return postToDTO;
         } else {
             return null;

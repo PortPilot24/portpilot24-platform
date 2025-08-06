@@ -5,9 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import com.example.post.domain.PostFile;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostFileRepository extends JpaRepository<PostFile, Long> {
-    List<PostFile> findByPostId(Long postId);
+    PostFile findByPostId(Long postId);
+    Optional<PostFile> findByStoredFilename(String storedFilename);
 }
