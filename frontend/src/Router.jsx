@@ -15,6 +15,7 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import ContainerMonitoringPage from './pages/ContainerMonitoringPage';
 import AffiliationContainerPage from './pages/AffiliationContainerPage';
 import PredictainerPage from './pages/PredictainerPage';
+import CustomsReviewPage from './pages/CustomsReviewPage';
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
             <Route path="/monitoring" element={<ContainerMonitoringPage />} />
             <Route path="/affiliation-containers" element={<AffiliationContainerPage />} />
             <Route path="/predictainer" element={<PredictainerPage />} />
+            <Route path="/review" element={<CustomsReviewPage />} />
           </Route>
 
           {/* 관리자만 접근 가능한 페이지 */}
