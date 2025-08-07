@@ -14,4 +14,7 @@ public class QueryResponse {
 
     private Integer iterations;
     private Boolean success;
+
+    private Long messageListId;
+    private Long messageId;
 }
