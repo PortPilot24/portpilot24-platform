@@ -1,6 +1,8 @@
 package com.example.user.controller;
 
 
+import com.example.user.dto.PasswordResetDto;
+import com.example.user.dto.PasswordResetRequestDto;
 import com.example.user.dto.UserDto;
 import com.example.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -103,6 +105,18 @@ public class UserController {
     public ResponseEntity<UserDto.EmailCheckResponse> checkEmail(@RequestParam String email) {
         UserDto.EmailCheckResponse response = userService.checkEmailAvailability(email);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/users/reset-password/request")
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody PasswordResetRequestDto dto) {
+        userService.sendResetPasswordEmail(dto.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/users/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody PasswordResetDto dto) {
+        userService.resetPassword(dto);
+        return ResponseEntity.ok().build();
     }
 }
 
