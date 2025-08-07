@@ -8,6 +8,7 @@ const ContainerMonitoringPage = () => {
   const [occupancyRate, setOccupancyRate] = useState(null);
   const [prediction, setPrediction] = useState(null); // 🔹 예측 데이터 상태 추가
 
+  // 현재점유율 가져오기
   useEffect(() => {
     fetch("http://localhost:8000/api/occupancy")
       .then((res) => res.json())
@@ -19,6 +20,20 @@ const ContainerMonitoringPage = () => {
         console.error("현재 점유율 불러오기 실패", err);
       });
   }, []);
+  // 예측 데이터 가져오기
+  useEffect(() => {
+    fetch("http://localhost:8000/api/predict-from-file")
+      .then((res) => res.json())
+      .then((data) => {
+        // 🌟 예측 값 배열만 따로 저장 (0~1 스케일)
+        const rawPredictions = Object.values(data.predictions);
+        setPrediction(rawPredictions);
+      })
+      .catch((err) => {
+        console.error("예측값 불러오기 실패", err);
+      });
+  }, []);
+
 
   const getStatus = (rate) => {
     if (rate >= 90) return { text: '매우 혼잡', color: '#e74c3c' };
@@ -68,8 +83,12 @@ const ContainerMonitoringPage = () => {
         </Link>
       </div>
 
-      <PredictedOccupancyChart historyLength={48} />
-      {prediction && <PredictedOccupancySummary predictions={prediction} />}
+      {prediction && (
+        <>
+          <PredictedOccupancyChart predictions={prediction} />
+          <PredictedOccupancySummary predictions={prediction} />
+        </>
+      )}
       
     </div>
     

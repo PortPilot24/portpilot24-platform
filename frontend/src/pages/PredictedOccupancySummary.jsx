@@ -1,28 +1,25 @@
-import React, { useEffect, useState } from 'react';
+// components/PredictedOccupancySummary.jsx
 
-const PredictedOccupancySummary = ({ predictions }) => {
-  const [summary, setSummary] = useState('');
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+function PredictedOccupancySummary({ predictions }) {
+  const [summary, setSummary] = useState("요약을 불러오는 중...");
 
   useEffect(() => {
-    if (!predictions) return;
-
-    const values = Object.values(predictions).map(v => v * 100);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-
-    let status = '';
-    if (avg >= 90) status = '매우 혼잡할 것으로 예상됩니다.';
-    else if (avg >= 50) status = '혼잡할 가능성이 있습니다.';
-    else status = '원활할 것으로 보입니다.';
-
-    setSummary(`향후 3시간 동안 평균 예상 점유율은 ${avg.toFixed(2)}%이며, ${status}`);
+    if (predictions.length > 0) {
+      axios.post("http://localhost:8000/api/summary", { predictions })
+        .then((res) => setSummary(res.data.summary))
+        .catch(() => setSummary("요약 불러오기 실패"));
+    }
   }, [predictions]);
 
   return (
-    <div className="llm-summary-box">
-      <h3>🧠 AI 예측 요약</h3>
+    <div className="bg-white p-4 rounded shadow mt-4">
+      <h3 className="text-lg font-semibold mb-2">📋 LLM 요약</h3>
       <p>{summary}</p>
     </div>
   );
-};
+}
 
 export default PredictedOccupancySummary;

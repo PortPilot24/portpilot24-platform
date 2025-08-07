@@ -4,29 +4,22 @@ import {
   Tooltip, ResponsiveContainer
 } from 'recharts';
 
-const PredictedOccupancyChart = () => {
-  const [predictions, setPredictions] = useState([]);
+const PredictedOccupancyChart = ({ predictions }) => {
+  if (!predictions || predictions.length === 0) {
+    return <p>📉 예측 데이터를 불러오는 중...</p>;
+  }
 
-  useEffect(() => {
-    fetch("http://localhost:8000/api/predict-from-file")
-      .then((res) => res.json())
-      .then((data) => {
-        const formatted = Object.entries(data.predictions).map(([timestamp, value]) => ({
-          time: new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          점유율예측: (value * 100).toFixed(2),
-        }));
-        setPredictions(formatted);
-      })
-      .catch((err) => {
-        console.error("예측값 불러오기 실패", err);
-      });
-  }, []);
+  // 예측값(0~1)을 퍼센트와 시간 포맷으로 가공
+  const formatted = predictions.map((value, index) => ({
+    time: `${index * 30}분 후`,  // 또는 실제 시간 계산해도 됨
+    점유율예측: (value * 100).toFixed(2),
+  }));
 
   return (
     <div style={{ width: '100%', height: 300 }}>
       <h3>📈 향후 6시간 예측 점유율</h3>
       <ResponsiveContainer>
-        <LineChart data={predictions}>
+        <LineChart data={formatted}>
           <CartesianGrid stroke="#ccc" />
           <XAxis dataKey="time" />
           <YAxis domain={[0, 100]} unit="%" />
