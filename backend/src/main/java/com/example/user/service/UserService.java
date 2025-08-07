@@ -5,6 +5,7 @@ import com.example.user.domain.User;
 import com.example.user.exception.BusinessException;
 import com.example.user.exception.ErrorCode;
 import com.example.user.repository.UserRepository;
+import com.example.utils.MaskingUtils;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,8 +151,8 @@ public class UserService {
 
         return UserDto.UserInfo.builder()
                 .id(user.getUserId())
-                .email(user.getEmail())
-                .name(user.getName())
+                .email(MaskingUtils.maskEmail(user.getEmail()))
+                .name(MaskingUtils.maskName(user.getName()))
                 .role(user.getRole().name())
                 .build();
     }

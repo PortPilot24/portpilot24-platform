@@ -43,36 +43,57 @@ function MyPage() {
   // handleSave 함수 부분을 아래 내용으로 교체하세요.
 const handleSave = async () => {
   setLoading(true);
-  try {
-    // 이름 변경 API 호출 (필요 시)
-    // await apiClient.patch('/users/me', { name: editName });
+    try {
+      // 이름 변경 API 호출 (필요 시)
+      // await apiClient.patch('/users/me', { name: editName });
 
-    // 비밀번호 변경 API 호출
-    if (editPassword) {
-      // API 명세서에 currentPassword 필드가 필요하므로, 사용자에게 현재 비밀번호를 입력받는 UI가 추가되어야 합니다.
-      // 여기서는 임시로 'currentPassword1234'를 사용합니다.
-      await apiClient.patch('/users/password', {
-        currentPassword: 'currentPassword1234', // 실제로는 사용자 입력값
-        newPassword: editPassword,
-      });
+      // 비밀번호 변경 API 호출
+      if (editPassword) {
+        // API 명세서에 currentPassword 필드가 필요하므로, 사용자에게 현재 비밀번호를 입력받는 UI가 추가되어야 합니다.
+        // 여기서는 임시로 'currentPassword1234'를 사용합니다.
+        await apiClient.patch('/users/password', {
+          currentPassword: 'currentPassword1234', // 실제로는 사용자 입력값
+          newPassword: editPassword,
+        });
+      }
+      
+      showNotification('정보가 성공적으로 수정되었습니다.', 'success');
+      setIsEditing(false);
+      fetchUserData();
+    } catch (error) {
+      showNotification('정보 수정에 실패했습니다.', 'error');
+    } finally {
+      setLoading(false);
     }
-    
-    showNotification('정보가 성공적으로 수정되었습니다.', 'success');
-    setIsEditing(false);
-    fetchUserData();
-  } catch (error) {
-    showNotification('정보 수정에 실패했습니다.', 'error');
-  } finally {
-    setLoading(false);
-  }
-};
-
-  
-
+  };
 
   if (loading && !isEditing) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   }
+
+  // 이름 마스킹 - 마지막 글자만 *
+  const maskName = (name) => {
+    if (!name) return '';
+    if (name.length < 2) return '*';
+    return name.slice(0, -1) + '*';
+  };
+
+  // 이메일 마스킹 - @ 앞의 마지막 3글자, @ 뒤 도메인의 일부 마스킹
+  const maskEmail = (email) => {
+    if (!email) return '';
+    const [localPart, domain] = email.split('@');
+    const localVisible = localPart.length > 3
+      ? localPart.slice(0, localPart.length - 3) + '***'
+      : '*'.repeat(localPart.length); // 너무 짧으면 전부 마스킹
+
+    const domainParts = domain.split('.');
+    const domainName = domainParts[0];
+    const domainMasked = domainName.length > 3
+      ? domainName.slice(0, 3) + '***'
+      : domainName.slice(0, 1) + '**';
+
+    return `${localVisible}@${domainMasked}.${domainParts.slice(1).join('.')}`;
+  };
 
   return (
     <Container component="main" maxWidth="sm" sx={{ mt: 4 }}>

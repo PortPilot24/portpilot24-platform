@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import com.example.post.domain.Post;
 
 import com.example.post.domain.PostFile;
+import com.example.utils.MaskingUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,7 @@ public class PostDTO {
         PostDTO postDTO = new PostDTO();
         postDTO.setId(post.getId());
         postDTO.setUserId(post.getUser().getUserId());
-        postDTO.setName(post.getUser().getName());
+        postDTO.setName(MaskingUtils.maskName(post.getUser().getName()));
         postDTO.setTitle(post.getTitle());
         postDTO.setContent(post.getContent());
         postDTO.setIsNotice(post.getIsNotice());
