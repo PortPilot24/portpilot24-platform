@@ -2,58 +2,32 @@ import React from 'react';
 import {
   Box,
   Chip,
-  Tooltip,
-  Typography
+  Tooltip
 } from '@mui/material';
 import {
-  CheckCircle as CheckIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon
+  FiberManualRecord as DotIcon
 } from '@mui/icons-material';
 
 const StatusIndicator = ({ healthStatus, connectionStatus }) => {
-  const getHealthChip = () => {
-    if (!healthStatus) {
-      return (
-        <Chip
-          icon={<ErrorIcon />}
-          label="서비스 오프라인"
-          color="error"
-          size="small"
-        />
-      );
-    }
-
-    const isHealthy = healthStatus.status === 'ok' && healthStatus.agentStatus === 'ready';
-    
-    return (
-      <Tooltip title={`API Version: ${healthStatus.apiVersion || 'Unknown'}`}>
-        <Chip
-          icon={isHealthy ? <CheckIcon /> : <WarningIcon />}
-          label={isHealthy ? '서비스 정상' : '서비스 점검 중'}
-          color={isHealthy ? 'success' : 'warning'}
-          size="small"
-        />
-      </Tooltip>
-    );
-  };
-
-  const getConnectionChip = () => {
-    return (
-      <Chip
-        icon={connectionStatus ? <CheckIcon /> : <ErrorIcon />}
-        label={connectionStatus ? '연결됨' : '연결 끊김'}
-        color={connectionStatus ? 'success' : 'error'}
-        size="small"
-        variant="outlined"
-      />
-    );
-  };
-
   return (
     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-      {getHealthChip()}
-      {getConnectionChip()}
+      <Tooltip title="서비스 상태">
+        <Chip
+          icon={<DotIcon sx={{ fontSize: 12 }} />}
+          label="실시간 응답"
+          size="small"
+          variant="outlined"
+          sx={{
+            fontSize: '0.75rem',
+            height: 24,
+            borderColor: connectionStatus ? '#4caf50' : '#f44336',
+            color: connectionStatus ? '#4caf50' : '#f44336',
+            '& .MuiChip-icon': {
+              color: connectionStatus ? '#4caf50' : '#f44336'
+            }
+          }}
+        />
+      </Tooltip>
     </Box>
   );
 };

@@ -5,41 +5,64 @@ import {
   IconButton,
   Typography,
   Paper,
-  Stack,
   CircularProgress,
-  Chip
+  Avatar
 } from '@mui/material';
 import {
-  Send as SendIcon,
-  SmartToy as BotIcon,
-  Person as PersonIcon
+  Send as SendIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import useHarborStore from '../../store/harborStore';
-import MessageItem from './MessageItem';
+import MessageBubble from './MessageBubble';
 
-const MessageContainer = styled(Box)(({ theme }) => ({
+const ChatContainer = styled(Box)(({ theme }) => ({
   flex: 1,
-  overflow: 'auto',
-  padding: theme.spacing(1),
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(2)
+  height: '100%',
+  backgroundColor: 'white'
+}));
+
+const MessagesArea = styled(Box)(({ theme }) => ({
+  flex: 1,
+  overflow: 'auto',
+  padding: theme.spacing(3),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(3),
+  backgroundColor: '#fafbfc'
+}));
+
+const InputArea = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2, 3),
+  backgroundColor: 'white',
+  borderTop: '1px solid #e0e0e0'
 }));
 
 const InputContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderTop: `1px solid ${theme.palette.divider}`,
   display: 'flex',
+  alignItems: 'center',
   gap: theme.spacing(1),
-  alignItems: 'flex-end'
+  backgroundColor: '#f8f9fa',
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(0.5, 2),
+  border: '1px solid #e0e0e0'
+}));
+
+const WelcomeMessage = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  textAlign: 'center',
+  backgroundColor: 'white',
+  border: '1px solid #e8eaed',
+  borderRadius: theme.spacing(2),
+  maxWidth: 600,
+  margin: '0 auto',
+  marginTop: theme.spacing(4)
 }));
 
 const ChatInterface = () => {
   const {
     messages,
-    currentQuery,
-    setCurrentQuery,
     processQuery,
     currentConversation,
     isProcessing
@@ -48,7 +71,6 @@ const ChatInterface = () => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
-  // 메시지가 업데이트될 때 스크롤을 맨 아래로
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isProcessing]);
@@ -75,77 +97,92 @@ const ChatInterface = () => {
   };
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      {/* 헤더 */}
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6">
-          {currentConversation ? `대화 #${currentConversation}` : '새 대화'}
-        </Typography>
-      </Box>
-
-      {/* 메시지 영역 */}
-      <MessageContainer>
+    <ChatContainer>
+      <MessagesArea>
         {messages.length === 0 && !isProcessing ? (
-          <Box sx={{ 
-            textAlign: 'center', 
-            mt: 4, 
-            opacity: 0.6,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2
-          }}>
-            <BotIcon sx={{ fontSize: 64 }} />
-            <Typography variant="h6">
+          <WelcomeMessage elevation={0}>
+            <Avatar
+              sx={{ 
+                width: 60, 
+                height: 60, 
+                margin: '0 auto 16px',
+                backgroundColor: '#1976d2'
+              }}
+            >
+              🛥️
+            </Avatar>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: '#333', mb: 1 }}>
               Harbor AI Assistant
             </Typography>
-            <Typography variant="body2">
-              항만 관련 질문을 입력해주세요.
+            <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+              항만 및 해운 관련 규정에 특화된 AI 어시스턴트
             </Typography>
-          </Box>
+            <Typography variant="body2" sx={{ color: '#999' }}>
+              궁금한 항만 법규나 절차에 대해 질문해주세요.
+            </Typography>
+          </WelcomeMessage>
         ) : (
           <>
             {messages.map((message) => (
-              <MessageItem key={message.id} message={message} />
+              <MessageBubble key={message.id} message={message} />
             ))}
             
-            {/* 처리 중 표시 */}
             {isProcessing && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
                 <CircularProgress size={16} />
                 <Typography variant="body2" color="text.secondary">
-                  처리 중...
+                  답변을 생성 중입니다...
                 </Typography>
               </Box>
             )}
           </>
         )}
         <div ref={messagesEndRef} />
-      </MessageContainer>
+      </MessagesArea>
 
-      {/* 입력 영역 */}
-      <InputContainer component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          multiline
-          maxRows={4}
-          placeholder="항만 관련 질문을 입력하세요..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isProcessing}
-          variant="outlined"
-          size="small"
-        />
-        <IconButton
-          type="submit"
-          disabled={!inputValue.trim() || isProcessing}
-          color="primary"
-        >
-          <SendIcon />
-        </IconButton>
-      </InputContainer>
-    </Box>
+      <InputArea>
+        <InputContainer component="form" onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            multiline
+            maxRows={4}
+            placeholder="항만 법규나 절차에 대해 질문하세요..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isProcessing}
+            variant="standard"
+            InputProps={{
+              disableUnderline: true,
+              sx: { fontSize: '0.95rem' }
+            }}
+            sx={{ 
+              '& .MuiInputBase-root': {
+                padding: 0
+              }
+            }}
+          />
+          <IconButton
+            type="submit"
+            disabled={!inputValue.trim() || isProcessing}
+            sx={{ 
+              color: inputValue.trim() && !isProcessing ? '#1976d2' : '#ccc'
+            }}
+          >
+            <SendIcon />
+          </IconButton>
+        </InputContainer>
+        
+        <Typography variant="caption" sx={{ 
+          color: '#999', 
+          textAlign: 'center', 
+          display: 'block', 
+          mt: 1 
+        }}>
+          실시간 응답 제공
+        </Typography>
+      </InputArea>
+    </ChatContainer>
   );
 };
 
