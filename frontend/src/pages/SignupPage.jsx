@@ -19,6 +19,7 @@ function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [affiliation, setAffiliation] = useState(''); // ✅ 소속 state 추가
   const [agreeTerms, setAgreeTerms] = useState(false);
   const navigate = useNavigate();
 
@@ -46,6 +47,7 @@ function SignupPage() {
         name,
         email,
         password,
+        affiliation, // ✅ 요청 본문에 소속 포함
         agreeTerms,
       });
 
@@ -103,6 +105,15 @@ function SignupPage() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+              required
+              fullWidth
+              id="affiliation"
+              label="소속 (예: HMM, SM Line 등)"
+              name="affiliation"
+              value={affiliation}
+              onChange={(e) => setAffiliation(e.target.value)}
             />
             <FormControlLabel
               control={

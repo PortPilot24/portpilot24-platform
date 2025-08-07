@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import PredictedOccupancyChart from './PredictedOccupancyChart';
+import PredictedOccupancySummary from './PredictedOccupancySummary';
+import { Link } from 'react-router-dom';
+
 
 const ContainerMonitoringPage = () => {
   const [occupancyRate, setOccupancyRate] = useState(null);
+  const [prediction, setPrediction] = useState(null); // 🔹 예측 데이터 상태 추가
 
   useEffect(() => {
     fetch("http://localhost:8000/api/occupancy")
@@ -49,9 +53,26 @@ const ContainerMonitoringPage = () => {
         {occupancyRate <= 90 && occupancyRate > 50 && <p>⛓ 혼잡도가 높아 예의주시가 필요합니다.</p>}
         {occupancyRate <= 50 && <p>✅ 현재는 원활한 상태입니다.</p>}
       </div>
+      <div style={{ marginTop: '20px' }}>
+        <Link to="/affiliation-containers" style={{ textDecoration: 'none' }}>
+          <button style={{
+            padding: '10px 20px',
+            backgroundColor: '#3498db',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}>
+            소속 기반 컨테이너 조회하기
+          </button>
+        </Link>
+      </div>
 
       <PredictedOccupancyChart historyLength={48} />
+      {prediction && <PredictedOccupancySummary predictions={prediction} />}
+      
     </div>
+    
   );
 };
 
@@ -117,3 +138,4 @@ export default ContainerMonitoringPage;
 
 // export default ContainerMonitoringPage;
 
+// <PredictedOccupancyChart historyLength={48} />

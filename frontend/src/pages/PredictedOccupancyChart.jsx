@@ -32,7 +32,7 @@ const PredictedOccupancyChart = ({ historyLength }) => {
 
   return (
     <div style={{ width: '100%', height: 300 }}>
-      <h3>📈 향후 3시간 예측 점유율</h3>
+      <h3>📈 향후 6시간 예측 점유율</h3>
       <ResponsiveContainer>
         <LineChart data={predictions}>
           <CartesianGrid stroke="#ccc" />
@@ -47,38 +47,3 @@ const PredictedOccupancyChart = ({ historyLength }) => {
 };
 
 export default PredictedOccupancyChart;
-
-
-
-// import React, { useEffect, useState } from 'react';
-// import axios from 'axios';
-// import {
-//   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-// } from 'recharts';
-
-// const PredictedOccupancyChart = () => {
-//   const [data, setData] = useState([]);
-
-//   useEffect(() => {
-//     axios.get('http://localhost:8000/api/predict')
-//       .then((response) => setData(response.data))
-//       .catch((error) => console.error('❌ 예측 데이터 불러오기 실패:', error));
-//   }, []);
-
-//   return (
-//     <div style={{ width: '100%', height: 300 }}>
-//       <h3 style={{ textAlign: 'center' }}>📈 예측 점유율 (향후)</h3>
-//       <ResponsiveContainer>
-//         <LineChart data={data}>
-//           <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-//           <XAxis dataKey="timestamp" />
-//           <YAxis domain={[0, 100]} />
-//           <Tooltip />
-//           <Line type="monotone" dataKey="occupancy_rate" stroke="#2ecc71" />
-//         </LineChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// };
-
-// export default PredictedOccupancyChart;

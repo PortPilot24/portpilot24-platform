@@ -17,6 +17,7 @@ function MyPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false); // 수정 모드 상태
   const [editName, setEditName] = useState('');
+  const [editAffiliation, setEditAffiliation] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const { showNotification } = useNotificationStore();
 
@@ -27,6 +28,7 @@ function MyPage() {
       const response = await apiClient.get('/users/me');
       setUser(response.data);
       setEditName(response.data.name); // 수정 필드 초기값 설정
+      setEditAffiliation(response.data.affiliation);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
       showNotification('사용자 정보를 불러오는 데 실패했습니다.', 'error');
@@ -43,9 +45,15 @@ function MyPage() {
   // handleSave 함수 부분을 아래 내용으로 교체하세요.
 const handleSave = async () => {
   setLoading(true);
+  
   try {
     // 이름 변경 API 호출 (필요 시)
     // await apiClient.patch('/users/me', { name: editName });
+    // 소속변경
+    // await apiClient.patch('/users/me', {
+    //   name: editName,
+    //   affiliation: editAffiliation,
+    // });
 
     // 비밀번호 변경 API 호출
     if (editPassword) {
@@ -89,6 +97,12 @@ const handleSave = async () => {
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
             />
+             <TextField
+              label="소속"
+              fullWidth
+              value={editAffiliation}
+              onChange={(e) => setEditAffiliation(e.target.value)}
+            />
             <TextField
               label="새 비밀번호 (선택)"
               type="password"
@@ -114,6 +128,7 @@ const handleSave = async () => {
                 <Typography variant="h6">이름: {user.name}</Typography>
                 <Typography variant="h6" sx={{ mt: 1 }}>이메일: {user.email}</Typography>
                 <Typography variant="h6" sx={{ mt: 1 }}>역할: {user.role}</Typography>
+                <Typography variant="h6" sx={{ mt: 1 }}>소속: {user.affiliation || '없음'}</Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
                   <Button variant="contained" onClick={() => setIsEditing(true)}>
                     정보 수정
