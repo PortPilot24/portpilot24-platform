@@ -18,20 +18,34 @@ function DashboardPage() {
             </Paper>
           </Grid>
         </Link>
+        {/* Card for Container Monitoring */}
+        <Link to="/predictainer" style={{ textDecoration: 'none' }}>
+          <Grid item xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240, cursor: 'pointer', // 마우스 커서 변경
+            '&:hover': { boxShadow: 6 }}}>
+              <Typography variant="h6" color="primary" gutterBottom>일별 컨테이너 반입량 예측</Typography>
+              <Typography>5년간의 컨테이너 반입 이력과<br />실시간 날씨 데이터를 기반으로,<br />향후 8일간의 컨테이너 반입량을<br />예측하는 모델</Typography>
+            </Paper>
+          </Grid>
+        </Link>
         {/* Card for Safety Detection */}
         <Grid item xs={12} md={6} lg={4}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240 }}>
-             <Typography variant="h6" color="primary" gutterBottom>안전보호구 감지</Typography>
-             <Typography>CCTV 영상 분석을 통한 실시간 안전 경고</Typography>
+            <Typography variant="h6" color="primary" gutterBottom>안전보호구 감지</Typography>
+            <Typography>CCTV 영상 분석을 통한 실시간 안전 경고</Typography>
           </Paper>
         </Grid>
-         {/* Card for Document Analysis */}
-        <Grid item xs={12} md={6} lg={4}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240 }}>
-             <Typography variant="h6" color="primary" gutterBottom>세관 서류 검수</Typography>
-             <Typography>AI 기반 서류 자동 분류 및 검토</Typography>
-          </Paper>
-        </Grid>
+         {/* Card for Document Analysis */}      
+        <Link to="/review" style={{ textDecoration: 'none' }}>
+          <Grid item xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240, cursor: 'pointer', // 마우스 커서 변경
+            '&:hover': { boxShadow: 6 }}}>
+              <Typography variant="h6" color="primary" gutterBottom>세관 서류 검수</Typography>
+              <Typography>AI 기반 서류 자동 분류 및 검토</Typography>
+            </Paper>
+          </Grid>
+        </Link>
+
       </Grid>
     </Container>
   );
