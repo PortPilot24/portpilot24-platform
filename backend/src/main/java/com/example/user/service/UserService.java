@@ -1,10 +1,14 @@
 package com.example.user.service;
 
+import com.example.user.domain.PasswordResetToken;
+import com.example.user.dto.PasswordResetDto;
 import com.example.user.dto.UserDto;
 import com.example.user.domain.User;
 import com.example.user.exception.BusinessException;
 import com.example.user.exception.ErrorCode;
+import com.example.user.repository.PasswordResetTokenRepository;
 import com.example.user.repository.UserRepository;
+import com.example.utils.MaskingUtils;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,6 +37,10 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,16}$";
 
     @Transactional
     public UserDto.SignupResponse signup(UserDto.SignupRequest request) {
@@ -43,12 +54,16 @@ public class UserService {
             throw new BusinessException(ErrorCode.TERMS_NOT_AGREED);
         }
 
+        // 비밀번호 형식 검증
+        validatePasswordStrength(request.getPassword());
+
         // 사용자 생성
         User user = User.builder()
                 .email(request.getEmail())
                 .name(request.getName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.USER)
+                .affiliation(request.getAffiliation())
                 .isTermsAgreed(request.getAgreeTerms())
                 .isActive(false) // 기본값은 false로 설정
                 .build();
@@ -68,16 +83,21 @@ public class UserService {
         }
     }
 
+    private void validatePasswordStrength(String password) {
+        if (password == null || !password.matches(PASSWORD_REGEX)) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
+
     public UserDto.LoginResponse login(UserDto.LoginRequest request) {
         // 인증 처리
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        User user =userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        if(!user.getIsActive()) {
+        if (!user.getIsActive()) {
             throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
         }
 
@@ -150,9 +170,10 @@ public class UserService {
 
         return UserDto.UserInfo.builder()
                 .id(user.getUserId())
-                .email(user.getEmail())
-                .name(user.getName())
+                .email(MaskingUtils.maskEmail(user.getEmail()))
+                .name(MaskingUtils.maskName(user.getName()))
                 .role(user.getRole().name())
+                .affiliation(user.getAffiliation())
                 .build();
     }
 
@@ -235,7 +256,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDto.EmailCheckResponse checkEmailAvailability(String email) {
-        if(email == null || email.isEmpty()) {
+        if (email == null || email.isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
         log.info("Checking email availability for: {}", email);
@@ -256,5 +277,42 @@ public class UserService {
         return user;
     }
 
-}
+    public void sendResetPasswordEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .userId(user.getUserId())
+                .expiresAt(expiration)
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink); // 아래에서 구현
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetDto dto) {
+        PasswordResetToken token = passwordResetTokenRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PASSWORD_RESET_TOKEN));
+
+        if (token.isExpired()) {
+            throw new BusinessException(ErrorCode.EXPIRED_PASSWORD_RESET_TOKEN);
+        }
+
+        User user = userRepository.findById(token.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        validatePasswordStrength(dto.getNewPassword());
+
+        user.updatePassword(passwordEncoder.encode(dto.getNewPassword()));
+
+        passwordResetTokenRepository.delete(token);
+    }
+}

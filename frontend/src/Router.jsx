@@ -12,7 +12,10 @@ import PostDetailPage from './pages/PostDetailPage';
 import PostFormPage from './pages/PostFormPage';
 import DashboardPage from './pages/DashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
+import ContainerMonitoringPage from './pages/ContainerMonitoringPage';
+import AffiliationContainerPage from './pages/AffiliationContainerPage';
 import PredictainerPage from './pages/PredictainerPage';
+import CustomsReviewPage from './pages/CustomsReviewPage';
 import HarborPage from './pages/HarborPage';
 
 
@@ -35,7 +38,10 @@ function Router() {
             <Route path="/posts/new" element={<PostFormPage />} />
             <Route path="/posts/:id" element={<PostDetailPage />} />
             <Route path="/posts/:id/edit" element={<PostFormPage />} />
+            <Route path="/monitoring" element={<ContainerMonitoringPage />} />
+            <Route path="/affiliation-containers" element={<AffiliationContainerPage />} />
             <Route path="/predictainer" element={<PredictainerPage />} />
+            <Route path="/review" element={<CustomsReviewPage />} />
             <Route path="/harbor" element={<HarborPage />} />
           </Route>
 

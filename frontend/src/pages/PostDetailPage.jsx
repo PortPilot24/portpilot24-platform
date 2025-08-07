@@ -69,6 +69,36 @@ function PostDetailPage() {
   // API 응답의 userId와 현재 로그인한 사용자의 id를 비교
   const isAuthor = user?.id === post.userId;
 
+  const handleDownload = async () => {
+    const token = localStorage.getItem('access_token');
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/attachments/${post.serverFileName}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('파일 다운로드 실패');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = post.originalFileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('파일을 다운로드할 수 없습니다.');
+    }
+  };
+
   return (
     <>
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -88,14 +118,12 @@ function PostDetailPage() {
           </Box>
 
           {/* fileAttached가 1이면 첨부파일 링크 표시 */}
-          {post.fileAttached === 1 && (
+          {post.originalFileName && post.serverFileName && (
             <Box sx={{ mb: 4, mt: 2, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
               <Typography variant="h6" gutterBottom>첨부파일</Typography>
               <Button
                 startIcon={<DownloadIcon />}
-                // 백엔드의 파일 다운로드 API 경로로 연결해야 합니다.
-                href={`http://localhost:8080/api/posts/attachments/${post.serverFileName}`}
-                target="_blank"
+                onClick={handleDownload}
               >
                 {post.originalFileName}
               </Button>
@@ -113,7 +141,7 @@ function PostDetailPage() {
           </Box>
         </Paper>
         
-        <CommentSection postId={id} />
+        {/* <CommentSection postId={id} /> */}
       </Container>
       
       <ConfirmationDialog
