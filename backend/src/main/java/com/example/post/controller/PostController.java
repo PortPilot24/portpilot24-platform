@@ -2,7 +2,10 @@ package com.example.post.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+import com.example.user.domain.User;
+import com.example.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 import com.example.post.dto.PostDTO;
 import com.example.post.service.PostService;
 
@@ -32,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class PostController {
 
     private final PostService postService;
+    private final UserService userService;
 
     //전체조회
     @GetMapping
@@ -58,12 +63,11 @@ public class PostController {
 
     //페이징처리
     @GetMapping("/paging")
-    public Page<PostEntity> paging(@RequestParam(defaultValue = "0") int page,
+    public Page<PostDTO> paging(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size,
-                                @RequestParam(defaultValue = "desc") String sortOrder){
+                                @RequestParam(defaultValue = "desc") String sortOrder) {
 
         Pageable pageable = PageRequest.of(page, size);
-
         return postService.paging(pageable);
     }
 
@@ -93,13 +97,28 @@ public class PostController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(
             @RequestParam("title") String title,
-            @RequestParam("content") String content
-            ) throws IOException {
+            @RequestParam("content") String content,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            Authentication authentication
+    ) throws IOException {
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
 
-        postService.insertPost(title, content);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Long postId = postService.insertPost(title, content, files, user);
+        // JSON 형태로 postId 반환
+        Map<String, Object> responseBody = Map.of("id", postId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
     }
+
+//    @PostMapping("/{postId}")
+//    public ResponseEntity<?> createComment(@PathVariable Long postId,
+//                                           Authentication authentication,
+//                                           @RequestBody CommentRequestDto request) {
+//        String email = authentication.getName();
+//        User user = userService.getUserByEmail(email);
+//        Comment comment = commentService.createComment(postId, user.getUserId().longValue(), request.getContent());
+//        return ResponseEntity.ok(new CommentResponseDto(comment, user.getUserId().longValue()));
+//    }
 
     //파일업로드(아직 로직 추가 안함.)
     @PostMapping("/fileUpload")
@@ -141,8 +160,8 @@ public class PostController {
             @RequestParam("isNotice") Boolean isNotice ,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         try {
-            PostEntity postEntity = new PostEntity();
-            postEntity.setIsNotice(true); // 공지사항으로 설정
+            Post post = new Post();
+            post.setIsNotice(true); // 공지사항으로 설정
             postService.insertPost(title, content);
             return ResponseEntity.ok("공지사항 작성 성공");
         } catch (IOException e) {

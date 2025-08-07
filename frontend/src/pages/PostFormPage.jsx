@@ -15,6 +15,9 @@ function PostFormPage() {
   const [loading, setLoading] = useState(false);
   const { showNotification } = useNotificationStore();
 
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf', 'docx'];
+  const MAX_FILE_SIZE_MB = 20; // 최대 20MB
+
   useEffect(() => {
     if (isEditMode) {
       const fetchPostData = async () => {
@@ -31,7 +34,27 @@ function PostFormPage() {
   }, [id, isEditMode, showNotification]);
 
   const handleFileChange = (event) => {
-    setFiles(event.target.files);
+    const selectedFiles = Array.from(event.target.files);
+    const validFiles = [];
+
+    for (let file of selectedFiles) {
+      const extension = file.name.split('.').pop().toLowerCase();
+      const sizeMB = file.size / (1024 * 1024);
+
+      if (!ALLOWED_EXTENSIONS.includes(extension)) {
+        showNotification(`허용되지 않는 파일 형식입니다: ${file.name}`, 'error');
+        continue;
+      }
+
+      if (sizeMB > MAX_FILE_SIZE_MB) {
+        showNotification(`파일이 너무 큽니다 (최대 ${MAX_FILE_SIZE_MB}MB): ${file.name}`, 'error');
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    setFiles(validFiles);
   };
 
   const handleSubmit = async (event) => {

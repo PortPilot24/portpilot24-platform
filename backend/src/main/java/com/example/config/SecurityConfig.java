@@ -61,7 +61,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/api/users/reset-password/request",
+                                "/api/users/reset-password"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "ROOT")
                         .anyRequest().authenticated()

@@ -1,8 +1,10 @@
 package com.example.post.dto;
 
 import java.time.LocalDateTime;
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 
+import com.example.post.domain.PostFile;
+import com.example.utils.MaskingUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PostDTO {
 
-    private Long postId;
+    private Long id;
     private Long userId;
     private String name;
     private String title;
@@ -21,6 +23,11 @@ public class PostDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // ✅ 추가
+    private Integer fileAttached; // 1: 첨부, 0: 없음
+    private String originalFileName;
+    private String serverFileName;
+
     // 파일업로드는 따로 뺄것
     // private MultipartFile postFile;
     // private String originalFileName;
@@ -28,16 +35,24 @@ public class PostDTO {
     // private int fileAttached;
 
     // 엔티티의 데이터를 DTO에 넣을때 사용할 함수
-    public static PostDTO toPostDTO(PostEntity postEntity){
+    public static PostDTO toPostDTO(Post post, PostFile postFile) {
         PostDTO postDTO = new PostDTO();
-        postDTO.setPostId(postEntity.getPostId());
-        postDTO.setUserId(postEntity.getUserId());
-        postDTO.setName(postEntity.getName());
-        postDTO.setTitle(postEntity.getTitle());
-        postDTO.setContent(postEntity.getContent());
-        postDTO.setIsNotice(postEntity.getIsNotice());
-        postDTO.setCreatedAt(postEntity.getCreatedAt());
-        postDTO.setUpdatedAt(postEntity.getUpdatedAt());
+        postDTO.setId(post.getId());
+        postDTO.setUserId(post.getUser().getUserId());
+        postDTO.setName(MaskingUtils.maskName(post.getUser().getName()));
+        postDTO.setTitle(post.getTitle());
+        postDTO.setContent(post.getContent());
+        postDTO.setIsNotice(post.getIsNotice());
+        postDTO.setCreatedAt(post.getCreatedAt());
+        postDTO.setUpdatedAt(post.getUpdatedAt());
+
+        if (postFile != null) {
+            postDTO.setFileAttached(1);
+            postDTO.setOriginalFileName(postFile.getOriginalFilename());
+            postDTO.setServerFileName(postFile.getStoredFilename());
+        } else {
+            postDTO.setFileAttached(0);
+        }
 
         // 첨부파일 유무를 확인하던 함수.
         // if(postEntity.getFileAttached() == 0){

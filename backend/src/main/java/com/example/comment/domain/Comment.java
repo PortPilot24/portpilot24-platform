@@ -1,6 +1,6 @@
 package com.example.comment.domain;
 
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 import com.example.user.domain.User;
 import jakarta.persistence.*;
 
@@ -15,7 +15,7 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "post_id", nullable = false)
-    private PostEntity post;  // ✅ 댓글이 속한 게시글
+    private Post post;  // ✅ 댓글이 속한 게시글
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -30,7 +30,7 @@ public class Comment {
     // === 생성자 ===
     public Comment() {}
 
-    public Comment(PostEntity post, User user, String content) {
+    public Comment(Post post, User user, String content) {
         this.post = post;
         this.user = user;
         this.content = content;
@@ -47,7 +47,7 @@ public class Comment {
         return commentId;
     }
 
-    public PostEntity getPost() {
+    public Post getPost() {
         return post;
     }
 
@@ -66,7 +66,7 @@ public class Comment {
         return this.user.getUserId();
     }
 
-    public void setPost(PostEntity post) {
+    public void setPost(Post post) {
         this.post = post;
     }
 
