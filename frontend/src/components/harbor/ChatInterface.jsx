@@ -6,7 +6,9 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  Avatar
+  Avatar,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   Send as SendIcon
@@ -23,44 +25,47 @@ const ChatContainer = styled(Box)(({ theme }) => ({
   backgroundColor: 'white'
 }));
 
-const MessagesArea = styled(Box)(({ theme }) => ({
+const MessagesArea = styled(Box)(({ theme, isMobile }) => ({
   flex: 1,
   overflow: 'auto',
-  padding: theme.spacing(3),
+  padding: isMobile ? theme.spacing(2) : theme.spacing(3),
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(3),
+  gap: isMobile ? theme.spacing(2) : theme.spacing(3),
   backgroundColor: '#fafbfc'
 }));
 
-const InputArea = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
+const InputArea = styled(Box)(({ theme, isMobile }) => ({
+  padding: isMobile ? theme.spacing(1.5, 2) : theme.spacing(2, 3),
   backgroundColor: 'white',
   borderTop: '1px solid #e0e0e0'
 }));
 
-const InputContainer = styled(Box)(({ theme }) => ({
+const InputContainer = styled(Box)(({ theme, isMobile }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
   backgroundColor: '#f8f9fa',
-  borderRadius: theme.spacing(3),
-  padding: theme.spacing(0.5, 2),
+  borderRadius: isMobile ? theme.spacing(2) : theme.spacing(3),
+  padding: isMobile ? theme.spacing(0.5, 1.5) : theme.spacing(0.5, 2),
   border: '1px solid #e0e0e0'
 }));
 
-const WelcomeMessage = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
+const WelcomeMessage = styled(Paper)(({ theme, isMobile }) => ({
+  padding: isMobile ? theme.spacing(2) : theme.spacing(3),
   textAlign: 'center',
   backgroundColor: 'white',
   border: '1px solid #e8eaed',
   borderRadius: theme.spacing(2),
-  maxWidth: 600,
+  maxWidth: isMobile ? '100%' : 600,
   margin: '0 auto',
-  marginTop: theme.spacing(4)
+  marginTop: isMobile ? theme.spacing(2) : theme.spacing(4)
 }));
 
 const ChatInterface = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const {
     messages,
     processQuery,
@@ -98,26 +103,35 @@ const ChatInterface = () => {
 
   return (
     <ChatContainer>
-      <MessagesArea>
+      <MessagesArea isMobile={isMobile}>
         {messages.length === 0 && !isProcessing ? (
-          <WelcomeMessage elevation={0}>
+          <WelcomeMessage elevation={0} isMobile={isMobile}>
             <Avatar
               sx={{ 
-                width: 60, 
-                height: 60, 
+                width: isMobile ? 50 : 60, 
+                height: isMobile ? 50 : 60, 
                 margin: '0 auto 16px',
                 backgroundColor: '#1976d2'
               }}
             >
               🛥️
             </Avatar>
-            <Typography variant="h5" sx={{ fontWeight: 600, color: '#333', mb: 1 }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              sx={{ fontWeight: 600, color: '#333', mb: 1 }}
+            >
               Harbor AI Assistant
             </Typography>
-            <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              sx={{ color: '#666', mb: 2 }}
+            >
               항만 및 해운 관련 규정에 특화된 AI 어시스턴트
             </Typography>
-            <Typography variant="body2" sx={{ color: '#999' }}>
+            <Typography 
+              variant={isMobile ? "caption" : "body2"} 
+              sx={{ color: '#999' }}
+            >
               궁금한 항만 법규나 절차에 대해 질문해주세요.
             </Typography>
           </WelcomeMessage>
@@ -140,13 +154,13 @@ const ChatInterface = () => {
         <div ref={messagesEndRef} />
       </MessagesArea>
 
-      <InputArea>
-        <InputContainer component="form" onSubmit={handleSubmit}>
+      <InputArea isMobile={isMobile}>
+        <InputContainer component="form" onSubmit={handleSubmit} isMobile={isMobile}>
           <TextField
             fullWidth
             multiline
-            maxRows={4}
-            placeholder="항만 법규나 절차에 대해 질문하세요..."
+            maxRows={isMobile ? 3 : 4}
+            placeholder={isMobile ? "질문하세요..." : "항만 법규나 절차에 대해 질문하세요..."}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -154,7 +168,7 @@ const ChatInterface = () => {
             variant="standard"
             InputProps={{
               disableUnderline: true,
-              sx: { fontSize: '0.95rem' }
+              sx: { fontSize: isMobile ? '0.9rem' : '0.95rem' }
             }}
             sx={{ 
               '& .MuiInputBase-root': {
@@ -165,11 +179,12 @@ const ChatInterface = () => {
           <IconButton
             type="submit"
             disabled={!inputValue.trim() || isProcessing}
+            size={isMobile ? "small" : "medium"}
             sx={{ 
               color: inputValue.trim() && !isProcessing ? '#1976d2' : '#ccc'
             }}
           >
-            <SendIcon />
+            <SendIcon fontSize={isMobile ? "small" : "medium"} />
           </IconButton>
         </InputContainer>
         
@@ -177,7 +192,8 @@ const ChatInterface = () => {
           color: '#999', 
           textAlign: 'center', 
           display: 'block', 
-          mt: 1 
+          mt: 1,
+          fontSize: isMobile ? '0.7rem' : '0.75rem'
         }}>
           실시간 응답 제공
         </Typography>
