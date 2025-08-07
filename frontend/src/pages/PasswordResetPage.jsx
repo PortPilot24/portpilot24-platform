@@ -1,14 +1,23 @@
-// src/pages/PasswordResetPage.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-// import apiClient from '../api/axios'; // 나중에 API 연동 시 주석 해제
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import apiClient from '../api/axios'; // ✅ 주석 해제
 import { Container, Box, Typography, TextField, Button, Stack } from '@mui/material';
 
 function PasswordResetPage() {
-  const [token, setToken] = useState(''); // 실제로는 URL 파라미터에서 가져옵니다.
+  const [searchParams] = useSearchParams(); // ✅ URL 쿼리 파라미터 추출
+  const navigate = useNavigate();
+
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigate = useNavigate();
+
+  // ✅ 최초 렌더링 시 URL에서 token 파라미터 추출
+  useEffect(() => {
+    const tokenFromUrl = searchParams.get('token');
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,10 +26,10 @@ function PasswordResetPage() {
       alert('새 비밀번호가 일치하지 않습니다.');
       return;
     }
-    
-    // 이 부분은 백엔드 연동 시 실제 API 호출 로직으로 대체합니다.
+
     try {
-      // await apiClient.post('/users/reset-password', { token, newPassword });
+      // ✅ 실제 API 요청
+      await apiClient.post('/users/reset-password', { token, newPassword });
       alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
       navigate('/login');
     } catch (error) {
@@ -45,6 +54,7 @@ function PasswordResetPage() {
               id="token"
               value={token}
               onChange={(e) => setToken(e.target.value)}
+              disabled // ✅ URL로부터 자동 세팅된 토큰은 수정 불가하게
             />
             <TextField
               required

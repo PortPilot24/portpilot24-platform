@@ -3,11 +3,12 @@ package com.example.post.service;
 import java.io.IOException;
 import java.util.List;
 
+import com.example.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.post.domain.PostEntity;
+import com.example.post.domain.Post;
 import com.example.post.dto.PostDTO;
 
 // import jakarta.mail.Multipart;
@@ -15,16 +16,19 @@ import com.example.post.dto.PostDTO;
 public interface PostService {
 
     //게시글 등록기능(create)
-    void insertPost(PostDTO postDTO) throws IOException;
+    // PostEntity insertPost(PostDTO postDTO) throws IOException;
+    void insertPost(String title, String content) throws IOException;
+
+    Long insertPost(String title, String content, List<MultipartFile> files, User user) throws IOException;
 
     //파일 업로드 기능
-    void uploadFile(MultipartFile file, String name) throws IOException;
+    void uploadFile(List<MultipartFile> files) throws IOException;
 
     //전체 게시글 조회(research_all)
     List<PostDTO> findPosts();
     
     //페이징 처리
-    Page<PostEntity> paging(Pageable pageable);
+    Page<PostDTO> paging(Pageable pageable);
     
     //특정 게시글 조회(research_post)
     PostDTO findPost(Long id);

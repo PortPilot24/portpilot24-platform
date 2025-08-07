@@ -1,10 +1,14 @@
 package com.example.user.service;
 
+import com.example.user.domain.PasswordResetToken;
+import com.example.user.dto.PasswordResetDto;
 import com.example.user.dto.UserDto;
 import com.example.user.domain.User;
 import com.example.user.exception.BusinessException;
 import com.example.user.exception.ErrorCode;
+import com.example.user.repository.PasswordResetTokenRepository;
 import com.example.user.repository.UserRepository;
+import com.example.utils.MaskingUtils;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,6 +37,10 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,16}$";
 
     @Transactional
     public UserDto.SignupResponse signup(UserDto.SignupRequest request) {
@@ -42,6 +53,9 @@ public class UserService {
         if (!request.getAgreeTerms()) {
             throw new BusinessException(ErrorCode.TERMS_NOT_AGREED);
         }
+
+        // 비밀번호 형식 검증
+        validatePasswordStrength(request.getPassword());
 
         // 사용자 생성
         User user = User.builder()
@@ -65,6 +79,12 @@ public class UserService {
             // 3. 동시성 문제로 UNIQUE 제약 조건 위반 시 예외 처리
             log.warn("회원가입 중 이메일 중복 경쟁 상태 발생: {}", request.getEmail());
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+    }
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || !password.matches(PASSWORD_REGEX)) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
     }
 
@@ -150,8 +170,8 @@ public class UserService {
 
         return UserDto.UserInfo.builder()
                 .id(user.getUserId())
-                .email(user.getEmail())
-                .name(user.getName())
+                .email(MaskingUtils.maskEmail(user.getEmail()))
+                .name(MaskingUtils.maskName(user.getName()))
                 .role(user.getRole().name())
                 .build();
     }
@@ -256,5 +276,43 @@ public class UserService {
         return user;
     }
 
+    public void sendResetPasswordEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .userId(user.getUserId())
+                .expiresAt(expiration)
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink); // 아래에서 구현
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetDto dto) {
+        PasswordResetToken token = passwordResetTokenRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PASSWORD_RESET_TOKEN));
+
+        if (token.isExpired()) {
+            throw new BusinessException(ErrorCode.EXPIRED_PASSWORD_RESET_TOKEN);
+        }
+
+        User user = userRepository.findById(token.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        validatePasswordStrength(dto.getNewPassword());
+
+        user.updatePassword(passwordEncoder.encode(dto.getNewPassword()));
+
+        passwordResetTokenRepository.delete(token);
+    }
 }
 

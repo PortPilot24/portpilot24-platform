@@ -79,8 +79,13 @@ return (
             </TableHead>
             <TableBody>
               {posts.map((post) => (
-                <TableRow key={post.postId}>
-                  <TableCell>{post.postId}</TableCell>
+                <TableRow
+                  key={post.id}
+                  hover
+                  sx={{ cursor: 'pointer' }} // 마우스 커서 변경
+                  onClick={() => navigate(`/posts/${post.id}`)} // 클릭 시 이동
+                >
+                  <TableCell>{post.id}</TableCell>
                   <TableCell>{post.title}</TableCell>
                   <TableCell>{post.name || '익명'}</TableCell>
                   <TableCell>{post.content}</TableCell>
