@@ -84,14 +84,14 @@ public class HarborController {
 
     /**
      * 특정 대화에 속한 모든 메시지를 조회
-     * @param messageId 조회할 대화의 ID
+     * @param listId 조회할 대화의 ID
      */
-    @GetMapping("/conversations/{messageId}")
-    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable Long messageId,Authentication authentication) {
+    @GetMapping("/messages/{listId}")
+    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable Long listId,Authentication authentication) {
         try {
             String email = authentication.getName();
             User user = userService.getUserByEmail(email);
-            List<MessageDTO> messages = harborPersistenceService.getMessagesForConversation(messageId, user);
+            List<MessageDTO> messages = harborPersistenceService.getMessagesForConversation(listId, user);
             return ResponseEntity.ok(messages);
         } catch (EntityNotFoundException e) {
             log.warn("메시지 조회 실패 (찾을 수 없음): {}", e.getMessage());
@@ -105,7 +105,7 @@ public class HarborController {
         }
     }
 
-    @DeleteMapping("/conversation/{messageId}")
+    @DeleteMapping("/message/{messageId}")
     public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId, Authentication authentication) {
         try {
             String email = authentication.getName();
@@ -124,7 +124,7 @@ public class HarborController {
         }
     }
 
-    @DeleteMapping("/conversations/{listId}")
+    @DeleteMapping("/conversation/{listId}")
     public ResponseEntity<Void> deleteConversation(@PathVariable Long listId, Authentication authentication) {
         try {
             String email = authentication.getName();
