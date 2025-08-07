@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
-
 public class UserDto {
 
     @Data
@@ -26,6 +25,9 @@ public class UserDto {
         @Size(min = 4, max = 20, message = "비밀번호는 4자 이상 20자 이하여야 합니다.")
         private String password;
 
+        @NotBlank(message = "소속을 입력해주세요.(생략가능)") // ✅ 추가
+        private String affiliation;
+
         @NotNull(message = "약관 동의는 필수입니다.")
         private Boolean agreeTerms;
     }
@@ -35,6 +37,7 @@ public class UserDto {
     public static class SignupResponse {
         private Long id;
         private String email;
+        private String affiliation;
     }
 
     @Builder
@@ -69,6 +72,7 @@ public class UserDto {
         private String email;
         private String name;
         private String role;
+        private String affiliation;
     }
 
     @Data
@@ -88,7 +92,6 @@ public class UserDto {
         @NotNull(message = "역할은 필수입니다.")
         private User.Role role;
     }
-
 
     @Data
     @Builder

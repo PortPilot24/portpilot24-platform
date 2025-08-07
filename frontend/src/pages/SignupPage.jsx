@@ -26,6 +26,7 @@ export default function SignupPage() {
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [affiliation, setAffiliation] = useState(''); // ✅ 소속 state 추가
   const navigate = useNavigate();
 
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,16}$/;
@@ -61,6 +62,7 @@ export default function SignupPage() {
         name,
         email,
         password,
+        affiliation, // ✅ 요청 본문에 소속 포함
         agreeTerms,
       });
       alert('관리자 승인 이후에 로그인이 가능합니다. 로그인 페이지로 이동합니다.');
@@ -157,6 +159,15 @@ export default function SignupPage() {
                   onChange={handlePasswordChange}
                   error={!!passwordError}
                   helperText={passwordError || '영문, 숫자, 특수문자를 포함한 8~16자'}
+                />
+                <TextField
+                  required
+                  fullWidth
+                  id="affiliation"
+                  label="소속 (예: HMM, SM Line 등)"
+                  name="affiliation"
+                  value={affiliation}
+                  onChange={(e) => setAffiliation(e.target.value)}
                 />
               </Stack>
 

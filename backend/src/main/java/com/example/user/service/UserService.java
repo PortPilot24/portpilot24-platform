@@ -63,6 +63,7 @@ public class UserService {
                 .name(request.getName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.USER)
+                .affiliation(request.getAffiliation())
                 .isTermsAgreed(request.getAgreeTerms())
                 .isActive(false) // 기본값은 false로 설정
                 .build();
@@ -91,13 +92,12 @@ public class UserService {
     public UserDto.LoginResponse login(UserDto.LoginRequest request) {
         // 인증 처리
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        User user =userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        if(!user.getIsActive()) {
+        if (!user.getIsActive()) {
             throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
         }
 
@@ -173,6 +173,7 @@ public class UserService {
                 .email(MaskingUtils.maskEmail(user.getEmail()))
                 .name(MaskingUtils.maskName(user.getName()))
                 .role(user.getRole().name())
+                .affiliation(user.getAffiliation())
                 .build();
     }
 
@@ -255,7 +256,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDto.EmailCheckResponse checkEmailAvailability(String email) {
-        if(email == null || email.isEmpty()) {
+        if (email == null || email.isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
         log.info("Checking email availability for: {}", email);
@@ -315,4 +316,3 @@ public class UserService {
         passwordResetTokenRepository.delete(token);
     }
 }
-

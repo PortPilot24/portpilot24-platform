@@ -1,6 +1,5 @@
 package com.example.user.domain;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,6 +31,9 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Column(name = "affiliation") // ✅ 소속 추가
+    private String affiliation;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
@@ -53,6 +55,7 @@ public class User {
         USER, ADMIN, ROOT
 
     }
+
     public void updateRole(Role role) {
         this.role = role;
     }
@@ -65,4 +68,3 @@ public class User {
         this.passwordHash = encodedPassword;
     }
 }
-
