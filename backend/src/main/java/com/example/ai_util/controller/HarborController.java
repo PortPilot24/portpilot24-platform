@@ -105,6 +105,45 @@ public class HarborController {
         }
     }
 
+    @DeleteMapping("/conversation/{messageId}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId, Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            User user = userService.getUserByEmail(email);
+            harborPersistenceService.deleteMessage(messageId, user);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            log.warn("메시지 삭제 실패 (찾을 수 없음): {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (SecurityException e) {
+            log.warn("메시지 삭제 보안 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (Exception e) {
+            log.error("메시지 삭제 중 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @DeleteMapping("/conversations/{listId}")
+    public ResponseEntity<Void> deleteConversation(@PathVariable Long listId, Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            User user = userService.getUserByEmail(email);
+            harborPersistenceService.deleteMessageList(listId, user);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            log.warn("대화 삭제 실패 (찾을 수 없음): {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (SecurityException e) {
+            log.warn("대화 삭제 보안 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (Exception e) {
+            log.error("대화 삭제 중 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
 
     @GetMapping("/health")
     public ResponseEntity<HealthResponse> checkHealth() {

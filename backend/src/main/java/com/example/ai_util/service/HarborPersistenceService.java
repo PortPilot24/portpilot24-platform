@@ -129,4 +129,36 @@ public class HarborPersistenceService {
                 .build();
         return harborMessageListRepository.save(messageList);
     }
+
+
+    @Transactional
+    public void deleteMessage(Long messageId, User user) {
+        HarborMessage message = harborMessageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Message not found with id: " + messageId));
+
+        // 보안 검사: 요청한 사용자가 메시지의 소유주가 맞는지 확인
+        if (!message.getHarborMessageListId().getUserId().getUserId().equals(user.getUserId())) {
+            log.warn("보안 위반: 사용자 {}가 소유하지 않은 메시지(ID: {}) 삭제 시도", user.getName(), messageId);
+            throw new SecurityException("User does not have access to delete this message.");
+        }
+
+        harborMessageRepository.delete(message);
+        log.info("메시지(ID: {}) 삭제 완료", messageId);
+    }
+
+    @Transactional
+    public void deleteMessageList(Long messageListId, User user) {
+        HarborMessageList messageList = harborMessageListRepository.findById(messageListId)
+                .orElseThrow(() -> new EntityNotFoundException("MessageList not found with id: " + messageListId));
+
+        // 보안 검사: 요청한 사용자가 대화의 소유주가 맞는지 확인
+        if (!messageList.getUserId().getUserId().equals(user.getUserId())) {
+            log.warn("보안 위반: 사용자 {}가 소유하지 않은 대화(ID: {}) 삭제 시도", user.getName(), messageListId);
+            throw new SecurityException("User does not have access to delete this conversation.");
+        }
+
+        harborMessageRepository.deleteAllByHarborMessageListId(messageList);
+        harborMessageListRepository.delete(messageList);
+        log.info("대화(ID: {}) 및 관련 메시지 삭제 완료", messageListId);
+    }
 }
