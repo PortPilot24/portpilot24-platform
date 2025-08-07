@@ -16,6 +16,8 @@ import ContainerMonitoringPage from './pages/ContainerMonitoringPage';
 import AffiliationContainerPage from './pages/AffiliationContainerPage';
 import PredictainerPage from './pages/PredictainerPage';
 import CustomsReviewPage from './pages/CustomsReviewPage';
+import HarborPage from './pages/HarborPage';
+
 
 function Router() {
   return (
@@ -40,6 +42,7 @@ function Router() {
             <Route path="/affiliation-containers" element={<AffiliationContainerPage />} />
             <Route path="/predictainer" element={<PredictainerPage />} />
             <Route path="/review" element={<CustomsReviewPage />} />
+            <Route path="/harbor" element={<HarborPage />} />
           </Route>
 
           {/* 관리자만 접근 가능한 페이지 */}
