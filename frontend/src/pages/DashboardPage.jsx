@@ -28,7 +28,7 @@ function DashboardPage() {
          {/* Card for Document Analysis */}
         <Grid item xs={12} md={6} lg={4}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240 }}>
-             <Typography variant="h6" color="primary" gutterBottom>세관 서류 검수</Typography>
+             <Typography variant="h6"  color="primary" gutterBottom component={RouterLink} to="/customs-review">세관 서류 검수</Typography>
              <Typography>AI 기반 서류 자동 분류 및 검토</Typography>
           </Paper>
         </Grid>
