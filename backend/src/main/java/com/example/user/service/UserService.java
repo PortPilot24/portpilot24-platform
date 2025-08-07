@@ -32,6 +32,8 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,16}$";
+
     @Transactional
     public UserDto.SignupResponse signup(UserDto.SignupRequest request) {
         // 이메일 중복 확인
@@ -43,6 +45,9 @@ public class UserService {
         if (!request.getAgreeTerms()) {
             throw new BusinessException(ErrorCode.TERMS_NOT_AGREED);
         }
+
+        // 비밀번호 형식 검증
+        validatePasswordStrength(request.getPassword());
 
         // 사용자 생성
         User user = User.builder()
@@ -66,6 +71,12 @@ public class UserService {
             // 3. 동시성 문제로 UNIQUE 제약 조건 위반 시 예외 처리
             log.warn("회원가입 중 이메일 중복 경쟁 상태 발생: {}", request.getEmail());
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+    }
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || !password.matches(PASSWORD_REGEX)) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
     }
 

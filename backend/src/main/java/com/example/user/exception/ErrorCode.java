@@ -11,6 +11,7 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(409, "이미 사용중인 이메일입니다."),
     TERMS_NOT_AGREED(400, "약관에 동의해주세요."),
     INVALID_PASSWORD(401, "비밀번호가 올바르지 않습니다."),
+    INVALID_PASSWORD_FORMAT(400, "비밀번호는 영문, 숫자, 특수문자를 포함한 8~16자여야 합니다."),
 
     // 인증 관련
     UNAUTHORIZED(401, "인증이 필요합니다."),
@@ -53,8 +54,6 @@ public enum ErrorCode {
     UNEXPECTED_EXCEPTION(500, "예상치 못한 예외가 발생했습니다. 관리자에게 문의하세요."),
     INVALID_EMAIL(400, "유효하지 않은 이메일 형식입니다."),;
     // 상태 코드와 메시지를 저장
-
-
 
 
 

@@ -25,7 +25,10 @@ export default function SignupPage() {
   const [name,       setName]       = useState('');
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
+
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,16}$/;
 
   // 1) 아직 약관에 동의하지 않았으면 PrivacyPolicy 컴포넌트로
   if (!agreeTerms) {
@@ -35,6 +38,12 @@ export default function SignupPage() {
   // 2) 약관 동의 후 표시되는 가입 폼
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!passwordRegex.test(password)) {
+      // alert('비밀번호는 영문, 숫자, 특수문자를 포함한 8~16자여야 합니다.');
+      setPasswordError('비밀번호는 영문, 숫자, 특수문자를 포함한 8~16자여야 합니다.');
+      return;
+    }
 
     // 간단 유효성 검사
     if (!email.includes('@')) {
@@ -54,7 +63,7 @@ export default function SignupPage() {
         password,
         agreeTerms,
       });
-      alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+      alert('관리자 승인 이후에 로그인이 가능합니다. 로그인 페이지로 이동합니다.');
       navigate('/login');
     } catch (err) {
       console.error(err);
@@ -62,6 +71,17 @@ export default function SignupPage() {
       const msg = err.response?.data?.message
         ?? '회원가입 중 오류가 발생했습니다.';
       alert(msg);
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+
+    if (!passwordRegex.test(value)) {
+      setPasswordError('비밀번호는 영문, 숫자, 특수문자를 포함한 8~16자여야 합니다.');
+    } else {
+      setPasswordError('');
     }
   };
 
@@ -134,7 +154,9 @@ export default function SignupPage() {
                   required
                   fullWidth
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
+                  error={!!passwordError}
+                  helperText={passwordError || '영문, 숫자, 특수문자를 포함한 8~16자'}
                 />
               </Stack>
 
