@@ -31,7 +31,7 @@ function LoginPage() {
     try {
       await login(email, password);
       showNotification('로그인 되었습니다.', 'success');
-      navigate('/posts');
+      navigate('/dashboard');
     } catch (error) {
       const status = error.response?.status;
 
