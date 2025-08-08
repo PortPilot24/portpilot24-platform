@@ -118,6 +118,9 @@ function PostFormPage() {
             파일 첨부
             <input type="file" multiple hidden onChange={handleFileChange} />
           </Button>
+          <Typography variant="body2" color="textSecondary">
+            * 최대 20MB, 확장자: jpg, jpeg, png, pdf, docx 파일만 업로드 가능합니다.
+          </Typography>
           {/* 선택된 파일 이름 표시 */}
           {Array.from(files).map(file => <Typography key={file.name}>{file.name}</Typography>)}
         </Stack>
