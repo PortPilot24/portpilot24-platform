@@ -29,12 +29,15 @@ function DashboardPage() {
           </Grid>
         </Link>
         {/* Card for Safety Detection */}
-        <Grid item xs={12} md={6} lg={4}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240 }}>
-            <Typography variant="h6" color="primary" gutterBottom>안전보호구 감지</Typography>
-            <Typography>CCTV 영상 분석을 통한 실시간 안전 경고</Typography>
-          </Paper>
-        </Grid>
+        <Link to="/analyzer" style={{ textDecoration: 'none' }}>
+          <Grid item xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240, cursor: 'pointer', // 마우스 커서 변경
+            '&:hover': { boxShadow: 6 }}}>
+              <Typography variant="h6" color="primary" gutterBottom>안전보호구 감지</Typography>
+              <Typography>CCTV 영상 분석을 통한 실시간 안전 경고</Typography>
+            </Paper>
+          </Grid>
+        </Link>
          {/* Card for Document Analysis */}      
         <Link to="/review" style={{ textDecoration: 'none' }}>
           <Grid item xs={12} md={6} lg={4}>
