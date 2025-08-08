@@ -45,7 +45,7 @@ function LoginPage() {
 
       console.error('Login error:', error);
     } finally {
-      setLoading(false); // 로딩 종료
+      setLoading(false); // 로딩 종료 
     }
   };
 
