@@ -31,7 +31,7 @@ function LoginPage() {
     try {
       await login(email, password);
       showNotification('로그인 되었습니다.', 'success');
-      navigate('/posts');
+      navigate('/dashboard');
     } catch (error) {
       const status = error.response?.status;
 
@@ -45,7 +45,7 @@ function LoginPage() {
 
       console.error('Login error:', error);
     } finally {
-      setLoading(false); // 로딩 종료
+      setLoading(false); // 로딩 종료 
     }
   };
 
