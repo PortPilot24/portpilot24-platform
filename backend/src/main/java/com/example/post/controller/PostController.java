@@ -128,9 +128,15 @@ public class PostController {
     }
 
     //게시글수정
-    @PatchMapping("/{id}")
-    public void updatePost(@PathVariable Long id, @RequestBody PostDTO post) throws IOException{
-        postService.updatePost(id, post);
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updatePost(
+            @PathVariable Long id,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files
+    ) throws IOException {
+        postService.updatePost(id, title, content, files);
+        return ResponseEntity.ok().build();
     }
 
     //게시글삭제

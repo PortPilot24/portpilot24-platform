@@ -34,7 +34,7 @@ public interface PostService {
     PostDTO findPost(Long id);
 
     //게시글 수정
-    void updatePost(Long id, PostDTO post) throws IOException;
+    void updatePost(Long id, String title, String content, List<MultipartFile> files) throws IOException;
 
     //게시글 삭제
     void deletePost(Long id);

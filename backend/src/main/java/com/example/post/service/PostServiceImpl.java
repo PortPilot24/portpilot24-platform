@@ -233,30 +233,73 @@ public class PostServiceImpl implements PostService {
         // );
     }
 
-    //게시글 수정
     @Override
     @Transactional
-    public void updatePost(Long id, PostDTO post) throws IOException {
-        
-        PostDTO fixedPost = findPost(id);
-        fixedPost.setTitle(post.getTitle());
-        fixedPost.setContent(post.getContent());
-        fixedPost.setUpdatedAt(LocalDateTime.now());
+    public void updatePost(Long id, String title, String content, List<MultipartFile> files) throws IOException {
+        // 1. 게시글 가져오기
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found: " + id));
 
-        Post postEntity = new Post();
-        postEntity = postRepository.findById(id).get();
-        postEntity.setTitle(fixedPost.getTitle());
-        postEntity.setContent(fixedPost.getContent());
-        postEntity.setUpdatedAt(fixedPost.getUpdatedAt());
-        postRepository.save(postEntity);
+        // 2. 게시글 수정
+        post.setTitle(title);
+        post.setContent(content);
+        post.setUpdatedAt(LocalDateTime.now());
+        postRepository.save(post);
 
-        
+        // 3. 새 파일이 있는 경우에만 기존 파일 삭제 후 새로 저장
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            // 기존 파일 삭제
+            PostFile existingFile = postFileRepository.findByPostId(id);
+            if (existingFile != null) {
+                String filePath = existingFile.getFilePath();
+                if (filePath != null) {
+                    File localFile = new File(filePath);
+                    if (localFile.exists()) {
+                        localFile.delete(); // 실제 파일 삭제
+                    }
+                }
+                postFileRepository.delete(existingFile); // DB 레코드 삭제
+                postFileRepository.flush(); // ✅ 중복 에러 방지 포인트
+            }
+
+            // 새 파일 저장
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    String extension = Optional.ofNullable(originalFilename)
+                            .filter(f -> f.contains("."))
+                            .map(f -> f.substring(originalFilename.lastIndexOf(".")))
+                            .orElse("");
+
+                    String os = System.getProperty("os.name").toLowerCase();
+                    String baseUploadPath = os.contains("win")
+                            ? "c:/upload/temp/"
+                            : "/var/upload/temp/";
+
+                    String storedFilename = UUID.randomUUID().toString() + extension;
+                    String uploadPath = baseUploadPath + storedFilename;
+
+                    File dest = new File(uploadPath);
+                    file.transferTo(dest);
+
+                    PostFile postFile = new PostFile();
+                    postFile.setPost(post);
+                    postFile.setOriginalFilename(originalFilename);
+                    postFile.setStoredFilename(storedFilename);
+                    postFile.setFilePath(uploadPath);
+                    postFile.setFileSize(file.getSize());
+
+                    postFileRepository.save(postFile);
+                }
+            }
+        }
     }
 
     //게시글 삭제
     @Override
     @Transactional
     public void deletePost(Long id) {
+        postFileRepository.deleteByPostId(id);
         postRepository.deleteById(id);
     }
 
