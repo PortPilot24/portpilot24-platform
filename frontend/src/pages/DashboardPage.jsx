@@ -48,6 +48,16 @@ function DashboardPage() {
             </Paper>
           </Grid>
         </Link>
+        {/* Card for Document Analysis */}      
+        <Link to="/harbor" style={{ textDecoration: 'none' }}>
+          <Grid item xs={12} md={6} lg={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 240, cursor: 'pointer', // 마우스 커서 변경
+            '&:hover': { boxShadow: 6 }}}>
+              <Typography variant="h6" color="primary" gutterBottom>규정 안내 및 상황 대응 Agent</Typography>
+              <Typography>항만, 운송관련 규정 안내 및 상황 대응 Agent</Typography>
+            </Paper>
+          </Grid>
+        </Link>
 
       </Grid>
     </Container>
