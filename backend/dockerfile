@@ -1,0 +1,26 @@
+
+FROM eclipse-temurin:17-jdk AS build
+WORKDIR /app
+
+COPY gradlew ./
+COPY gradle ./gradle
+
+RUN chmod +x gradlew
+
+COPY . .
+
+RUN ./gradlew --no-daemon clean bootJar -x test
+
+FROM eclipse-temurin:17-jre
+ENV TZ=Asia/Seoul \
+    JAVA_OPTS=""
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --retries=5 \
+  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
+
