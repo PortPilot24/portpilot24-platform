@@ -30,8 +30,8 @@ function AffiliationContainerPage() {
         const userAffiliation = userResponse.data.affiliation;
         setAffiliation(userAffiliation);
 
-        const containerRes = await fetch(
-          `http://localhost:8000/api/containers-by-affiliation?affiliation=${encodeURIComponent(userAffiliation)}`
+        const containerRes = await apiClient.fetch(
+          `/containers-by-affiliation?affiliation=${encodeURIComponent(userAffiliation)}`
         );
         const containerData = await containerRes.json();
         if (containerRes.ok) {

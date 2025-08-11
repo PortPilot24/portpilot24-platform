@@ -7,7 +7,7 @@ function PredictainerPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/predictainer/predict')
+    axios.get('predictainer/predict')
       .then((res) => {
         setPredictions(res.data.predictions);
         setLoading(false);

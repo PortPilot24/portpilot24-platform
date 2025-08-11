@@ -10,7 +10,7 @@ const ContainerMonitoringPage = () => {
 
   // 현재점유율 가져오기
   useEffect(() => {
-    fetch("http://localhost:8000/api/occupancy")
+    fetch("/container-monitoring/occupancy")
       .then((res) => res.json())
       .then((data) => {
         const percentage = data.occupancy_rate * 100;
@@ -22,7 +22,7 @@ const ContainerMonitoringPage = () => {
   }, []);
   // 예측 데이터 가져오기
   useEffect(() => {
-    fetch("http://localhost:8000/api/predict-from-file")
+    fetch("/container-monitoring/predict-from-file")
       .then((res) => res.json())
       .then((data) => {
         // 🌟 예측 값 배열만 따로 저장 (0~1 스케일)

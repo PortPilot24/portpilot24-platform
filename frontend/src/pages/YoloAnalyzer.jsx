@@ -15,7 +15,7 @@ function YoloAnalyzer() {
     setLoading(true);
     setStreamReady(false);
 
-    await fetch("http://localhost:8000/upload", {
+    await fetch("/safety-detector/upload", {
       method: "POST",
       body: formData,
     });
@@ -30,7 +30,7 @@ function YoloAnalyzer() {
     if (streamReady) {
       intervalId = setInterval(async () => {
         try {
-          const res = await fetch("http://localhost:8000/yolo/status");
+          const res = await fetch("/safety-detector/status");
           const data = await res.json();
           setUnprotectedCount(data.unprotected_person);
         } catch (err) {
@@ -78,7 +78,7 @@ function YoloAnalyzer() {
              📷 분석 영상 스트리밍
             </h3>
             <img
-              src="http://localhost:8000/stream"
+              src="/safety-detector/stream"
               alt="YOLO Stream"
               className="w-full max-w-3xl mx-auto border border-gray-300 rounded"
             />

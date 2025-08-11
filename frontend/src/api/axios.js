@@ -2,7 +2,7 @@ import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api',
 });
 
 // 요청 인터셉터
@@ -23,7 +23,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refresh_token');
-        const response = await axios.post('http://localhost:8080/api/users/refresh', { refreshToken });
+        const response = await axios.post('/users/refresh', { refreshToken });
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         localStorage.setItem('access_token', accessToken);

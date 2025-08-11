@@ -8,7 +8,7 @@ function PredictedOccupancySummary({ predictions }) {
 
   useEffect(() => {
     if (predictions.length > 0) {
-      axios.post("http://localhost:8000/api/summary", { predictions })
+      axios.post("/container-monitoring/summary", { predictions })
         .then((res) => setSummary(res.data.summary))
         .catch(() => setSummary("요약 불러오기 실패"));
     }

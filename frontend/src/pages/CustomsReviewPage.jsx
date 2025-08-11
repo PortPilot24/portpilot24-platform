@@ -33,7 +33,7 @@ export default function CustomsReviewPage() {
     formData.append('file', file);
     try {
       setLoading(true);
-      const { data } = await axios.post('http://localhost:8000/api/customs_review', formData);
+      const { data } = await axios.post('/document-validator/customs_review', formData);
       setReviewResult(data);
     } catch (err) {
       console.error(err);
