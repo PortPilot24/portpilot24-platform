@@ -1,39 +1,51 @@
+// frontend/src/pages/ContainerMonitoringPage.jsx
 import React, { useEffect, useState } from 'react';
 import PredictedOccupancyChart from './PredictedOccupancyChart';
 import PredictedOccupancySummary from './PredictedOccupancySummary';
 import { Link } from 'react-router-dom';
-
+import { fdClient } from '../api/axios'; // ✅ 추가: AI 호출은 fdClient 사용
 
 const ContainerMonitoringPage = () => {
   const [occupancyRate, setOccupancyRate] = useState(null);
-  const [prediction, setPrediction] = useState(null); // 🔹 예측 데이터 상태 추가
+  const [prediction, setPrediction] = useState(null);
+  const [loadingOcc, setLoadingOcc] = useState(true);
+  const [loadingPred, setLoadingPred] = useState(true);
 
-  // 현재점유율 가져오기
+  // 현재 점유율
   useEffect(() => {
-    fetch("/container-monitoring/occupancy")
-      .then((res) => res.json())
-      .then((data) => {
-        const percentage = data.occupancy_rate * 100;
+    let cancelled = false;
+    fdClient.get('/container-monitoring/occupancy')
+      .then(({ data }) => {
+        if (cancelled) return;
+        const percentage = Number(data.occupancy_rate) * 100;
         setOccupancyRate(percentage);
       })
       .catch((err) => {
-        console.error("현재 점유율 불러오기 실패", err);
+        console.error('현재 점유율 불러오기 실패', err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingOcc(false);
       });
+    return () => { cancelled = true; };
   }, []);
-  // 예측 데이터 가져오기
+
+  // 예측 데이터
   useEffect(() => {
-    fetch("/container-monitoring/predict-from-file")
-      .then((res) => res.json())
-      .then((data) => {
-        // 🌟 예측 값 배열만 따로 저장 (0~1 스케일)
-        const rawPredictions = Object.values(data.predictions);
+    let cancelled = false;
+    fdClient.get('/container-monitoring/predict-from-file')
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rawPredictions = Object.values(data?.predictions ?? {});
         setPrediction(rawPredictions);
       })
       .catch((err) => {
-        console.error("예측값 불러오기 실패", err);
+        console.error('예측값 불러오기 실패', err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPred(false);
       });
+    return () => { cancelled = true; };
   }, []);
-
 
   const getStatus = (rate) => {
     if (rate >= 90) return { text: '매우 혼잡', color: '#e74c3c' };
@@ -41,7 +53,7 @@ const ContainerMonitoringPage = () => {
     return { text: '원활', color: '#2ecc71' };
   };
 
-  if (occupancyRate === null) {
+  if (occupancyRate === null || loadingOcc) {
     return <p>📡 점유율 정보를 불러오는 중...</p>;
   }
 
@@ -68,6 +80,7 @@ const ContainerMonitoringPage = () => {
         {occupancyRate <= 90 && occupancyRate > 50 && <p>⛓ 혼잡도가 높아 예의주시가 필요합니다.</p>}
         {occupancyRate <= 50 && <p>✅ 현재는 원활한 상태입니다.</p>}
       </div>
+
       <div style={{ marginTop: '20px' }}>
         <Link to="/affiliation-containers" style={{ textDecoration: 'none' }}>
           <button style={{
@@ -83,15 +96,13 @@ const ContainerMonitoringPage = () => {
         </Link>
       </div>
 
-      {prediction && (
+      {!loadingPred && prediction && (
         <>
           <PredictedOccupancyChart predictions={prediction} />
           <PredictedOccupancySummary predictions={prediction} />
         </>
       )}
-      
     </div>
-    
   );
 };
 

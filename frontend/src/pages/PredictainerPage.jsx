@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Paper, Typography, Box, CircularProgress } from '@mui/material';
-import axios from 'axios';
+import { fdClient } from '../api/axios';
 
 function PredictainerPage() {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('predictainer/predict')
+    fdClient.get('/predictainer/predict')
       .then((res) => {
         setPredictions(res.data.predictions);
         setLoading(false);

@@ -1,6 +1,7 @@
 node_modules
 dist
 .git
-.vscode
-.DS_Store
-npm-debug.log*
+.gitignore
+Dockerfile
+docker-compose.yml
+*.log

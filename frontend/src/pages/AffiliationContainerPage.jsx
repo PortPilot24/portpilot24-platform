@@ -1,6 +1,7 @@
 // src/pages/AffiliationContainerPage.jsx
 import { useState, useEffect } from 'react';
 import apiClient from '../api/axios';
+import { fdClient } from '../api/axios';
 import {
   Container,
   Typography,
@@ -30,7 +31,7 @@ function AffiliationContainerPage() {
         const userAffiliation = userResponse.data.affiliation;
         setAffiliation(userAffiliation);
 
-        const containerRes = await apiClient.fetch(
+        const containerRes = await fdClient.get(
           `/containers-by-affiliation?affiliation=${encodeURIComponent(userAffiliation)}`
         );
         const containerData = await containerRes.json();

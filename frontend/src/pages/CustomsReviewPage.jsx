@@ -16,6 +16,7 @@ import {
 import DescriptionIcon from '@mui/icons-material/Description';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ReviewResultDisplay from '/src/pages/ReviewResultDisplay';
+import { fdClient } from '../api/axios';
 
 export default function CustomsReviewPage() {
   const [file, setFile] = useState(null);
@@ -33,7 +34,7 @@ export default function CustomsReviewPage() {
     formData.append('file', file);
     try {
       setLoading(true);
-      const { data } = await axios.post('/document-validator/customs_review', formData);
+      const { data } = await fdClient.post('/document-validator/customs_review', formData);
       setReviewResult(data);
     } catch (err) {
       console.error(err);
