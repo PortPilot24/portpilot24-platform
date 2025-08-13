@@ -73,7 +73,7 @@ function PostDetailPage() {
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/attachments/${post.serverFileName}`, {
+      const response = await fetch(`/api/posts/attachments/${post.serverFileName}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
