@@ -1,7 +1,6 @@
 // src/pages/AffiliationContainerPage.jsx
 import { useState, useEffect } from 'react';
-import apiClient from '../api/axios';
-import { fdClient } from '../api/axios';
+import { fdClient, apiClient } from '../api/axios';
 import {
   Container,
   Typography,
@@ -27,30 +26,26 @@ function AffiliationContainerPage() {
   useEffect(() => {
     const fetchUserAndContainers = async () => {
       try {
-        const userResponse = await apiClient.get('/users/me');
-        const userAffiliation = userResponse.data.affiliation;
+        const userRes = await apiClient.get('/users/me');
+        const userAffiliation = userRes?.data?.affiliation ?? '';
         setAffiliation(userAffiliation);
 
-        const containerRes = await fdClient.get(
-          `/containers-by-affiliation?affiliation=${encodeURIComponent(userAffiliation)}`
+        // 2) 컨테이너 데이터 (axios는 fetch가 아님!)
+        const { data } = await fdClient.get(
+          '/container-monitoring/affiliation-containers',
+          { params: { affiliation: userAffiliation } }
         );
-        const containerData = await containerRes.json();
-        if (containerRes.ok) {
-          setContainers(containerData.containers || []);
-        } else {
-          showNotification(containerData.message || "데이터 조회 실패", "error");
-        }
-      } catch (error) {
-        console.error(error);
-        showNotification("컨테이너 정보를 불러오는 데 실패했습니다.", "error");
+        setContainers(Array.isArray(data?.containers) ? data.containers : []);
+      } catch (err) {
+        console.error(err);
+        // showNotification?.("컨테이너 정보를 불러오는 데 실패했습니다.", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserAndContainers();
-  }, []);
-
+  }, []);    
   if (loading) return <p>🔄 데이터를 불러오는 중입니다...</p>;
 
   return (
@@ -87,5 +82,4 @@ function AffiliationContainerPage() {
     </div>
   );
 }
-
 export default AffiliationContainerPage;
