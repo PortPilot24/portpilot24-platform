@@ -1,0 +1,62 @@
+/* Global styles for SmartPort Intro page */
+.smart-port-container {
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Overview Section */
+.overview-section {
+  padding: 6rem 2rem;
+  background: #f8f9fa;
+}
+
+.overview-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.overview-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: rgb(25, 118, 210);
+  margin-bottom: 2rem;
+}
+
+.overview-description {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 900px;
+  margin: 0 auto 4rem auto;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .overview-title {
+    font-size: 2rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .overview-section {
+    padding: 4rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-title {
+    font-size: 1.8rem;
+  }
+}

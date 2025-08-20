@@ -40,6 +40,9 @@ function Header() {
           </Box>
         ) : (
           <Box>
+            <Button color="inherit" component={RouterLink} to="/intro">
+              프로젝트 소개
+            </Button>
             <Button color="inherit" component={RouterLink} to="/login">
               로그인
             </Button>

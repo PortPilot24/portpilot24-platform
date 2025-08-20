@@ -18,7 +18,7 @@ import PredictainerPage from './pages/PredictainerPage';
 import CustomsReviewPage from './pages/CustomsReviewPage';
 import HarborPage from './pages/HarborPage';
 import YoloAnalyzer from './pages/YoloAnalyzer';
-
+import SmartPortIntro from './pages/SmartPortIntro';
 
 function Router() {
   return (
@@ -30,6 +30,7 @@ function Router() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/request-password-reset" element={<PasswordRequestPage />} />
           <Route path="/reset-password" element={<PasswordResetPage />} />
+          <Route path="/intro" element={<SmartPortIntro />} />
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
