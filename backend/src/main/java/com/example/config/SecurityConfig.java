@@ -3,6 +3,8 @@ package com.example.config;
 import com.example.user.service.JwtAuthenticationEntryPoint;
 import com.example.user.service.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -30,12 +33,24 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    // @Value("${ALLOWED_ORIGINS:http://localhost:5173}")
+    // private String allowedOriginsEnv; // 쉼표로 구분
+
     // 2. Define the CorsConfigurationSource bean
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:80"));
+    // 1) 환경변수에서 허용 origin 목록 만들기
+        // List<String> origins = Arrays.stream(allowedOriginsEnv.split(","))
+        //         .map(String::trim)
+        //         .filter(s -> !s.isBlank())
+        //         .toList();
+        // configuration.setAllowedOrigins(origins);
+        // 또는 하위 도메인까지 허용하려면 ↓ 로 교체
+        // cfg.setAllowedOriginPatterns(List.of("https://*.example.com"));
+
+        configuration.setAllowedOrigins(List.of("*", "http://localhost:80"));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
