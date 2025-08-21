@@ -1,0 +1,67 @@
+/* Feature Card Styles */
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(25, 118, 210, 0.08);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(25, 118, 210, 0.15);
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.feature-icon.red {
+  background: linear-gradient(135deg, #ff5252, #f44336);
+}
+
+.feature-icon.blue {
+  background: linear-gradient(135deg, rgb(25, 118, 210), rgb(30, 136, 229));
+}
+
+.feature-icon.green {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+}
+
+.feature-icon.purple {
+  background: linear-gradient(135deg, rgb(25, 118, 210), #7b1fa2);
+}
+
+.feature-icon.orange {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+.feature-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.feature-description {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .feature-card {
+    padding: 1.5rem;
+  }
+}

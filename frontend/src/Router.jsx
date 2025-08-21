@@ -18,18 +18,21 @@ import PredictainerPage from './pages/PredictainerPage';
 import CustomsReviewPage from './pages/CustomsReviewPage';
 import HarborPage from './pages/HarborPage';
 import YoloAnalyzer from './pages/YoloAnalyzer';
-
+import SmartPortIntro from './pages/SmartPortIntro';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function Router() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Navigate to="/intro" />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/request-password-reset" element={<PasswordRequestPage />} />
           <Route path="/reset-password" element={<PasswordResetPage />} />
+          <Route path="/intro" element={<SmartPortIntro />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
 
           {/* 로그인이 필요한 페이지 */}
           <Route element={<ProtectedRoute />}>
