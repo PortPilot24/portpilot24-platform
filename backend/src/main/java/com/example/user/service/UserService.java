@@ -129,7 +129,7 @@ public UserDto.LoginResponse login(UserDto.LoginRequest request) {
 
     // 선잠금 체크(존재 시에만)
     userRepository.findByEmail(email).ifPresent(u -> {
-        if (u.isLockedNow()) throw new BusinessException(ErrorCode.AUTHENTICATION_FAILED);
+        if (u.isLockedNow()) throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);
     });
 
     try {
@@ -349,8 +349,9 @@ public UserDto.LoginResponse login(UserDto.LoginRequest request) {
 
         passwordResetTokenRepository.save(resetToken);
 
-        String resetLink = "${DOMAIN_NAME}/reset-password?token=" + token;
-
+        String resetLink = "https://protpilot-gaeqdhdxhvajagc8.z01.azurefd.net/reset-password?token=" + token;
+        
+// ${DOMAIN_NAME}
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink); // 아래에서 구현
     }
 
