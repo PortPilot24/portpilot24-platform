@@ -39,8 +39,6 @@ function LoginPage() {
         showNotification('이메일 또는 비밀번호가 일치하지 않습니다.', 'error');
       } else if (status === 403) {
         showNotification('관리자 승인 후 로그인할 수 있습니다.', 'warning');
-      } else if (status === 423) {
-        showNotification('계정이 잠겼습니다. 관리자에게 문의하세요.', 'warning');
       } else {
         showNotification('로그인 중 오류가 발생했습니다.', 'error');
       }
