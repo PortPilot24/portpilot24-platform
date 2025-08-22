@@ -4,7 +4,6 @@ import com.example.user.service.JwtAuthenticationEntryPoint;
 import com.example.user.service.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -50,7 +48,11 @@ public class SecurityConfig {
         // 또는 하위 도메인까지 허용하려면 ↓ 로 교체
         // cfg.setAllowedOriginPatterns(List.of("https://*.example.com"));
 
-        configuration.setAllowedOrigins(List.of("*", "http://localhost:80"));
+        configuration.setAllowedOriginPatterns(List.of(
+        "http://localhost:*",
+        "http://127.0.0.1:*"
+        // "https://your-frontend-domain"  // 배포 시 추가
+    ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

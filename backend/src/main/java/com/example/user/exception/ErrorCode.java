@@ -1,5 +1,7 @@
 package com.example.user.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +25,8 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND(404, "리프레시 토큰을 찾을 수 없습니다."),
     INVALID_PASSWORD_RESET_TOKEN(401, "유효하지 않은 비밀번호 재설정 토큰입니다."),
     EXPIRED_PASSWORD_RESET_TOKEN(410, "비밀번호 재설정 토큰이 만료되었습니다."),
+
+    AUTHENTICATION_FAILED(401,"아이디 또는 비밀번호가 올바르지 않습니다."),
 
     // 기타
     INTERNAL_SERVER_ERROR(500, "서버 내부 오류가 발생했습니다."),
@@ -56,9 +60,6 @@ public enum ErrorCode {
     UNEXPECTED_EXCEPTION(500, "예상치 못한 예외가 발생했습니다. 관리자에게 문의하세요."),
     INVALID_EMAIL(400, "유효하지 않은 이메일 형식입니다."),;
     // 상태 코드와 메시지를 저장
-
-
-
 
 
     private final int status;

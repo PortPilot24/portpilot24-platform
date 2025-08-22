@@ -16,15 +16,22 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.example.user.service.LoginAuditService;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +46,7 @@ public class UserService {
     private final UserDetailsService userDetailsService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
+    private final LoginAuditService loginAuditService;
 
     private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,16}$";
 
@@ -58,29 +66,24 @@ public class UserService {
         validatePasswordStrength(request.getPassword());
 
         // 사용자 생성
-        User user = User.builder()
-                .email(request.getEmail())
-                .name(request.getName())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(User.Role.USER)
-                .affiliation(request.getAffiliation())
-                .isTermsAgreed(request.getAgreeTerms())
-                .isActive(false) // 기본값은 false로 설정
+    User user = User.createForSignup(
+            request.getEmail(),
+            request.getName(),
+            passwordEncoder.encode(request.getPassword()),
+            User.Role.USER,
+            request.getAffiliation(),
+            request.getAgreeTerms()
+    );
+
+    try {
+        User savedUser = userRepository.save(user);
+        return UserDto.SignupResponse.builder()
+                .id(savedUser.getUserId())
+                .email(savedUser.getEmail())
                 .build();
-
-        try {
-            // 2. DB에 저장 시도 (최종 방어선)
-            User savedUser = userRepository.save(user);
-
-            return UserDto.SignupResponse.builder()
-                    .id(savedUser.getUserId())
-                    .email(savedUser.getEmail())
-                    .build();
-        } catch (DataIntegrityViolationException e) {
-            // 3. 동시성 문제로 UNIQUE 제약 조건 위반 시 예외 처리
-            log.warn("회원가입 중 이메일 중복 경쟁 상태 발생: {}", request.getEmail());
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
-        }
+    } catch (DataIntegrityViolationException e) {
+        throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+    }
     }
 
     private void validatePasswordStrength(String password) {
@@ -89,31 +92,85 @@ public class UserService {
         }
     }
 
-    public UserDto.LoginResponse login(UserDto.LoginRequest request) {
-        // 인증 처리
+    // public UserDto.LoginResponse login(UserDto.LoginRequest request) {
+    //     // 인증 처리
+    //     authenticationManager.authenticate(
+    //             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+    //     User user = userRepository.findByEmail(request.getEmail())
+    //             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+    //     // 관리자가 가입 승인을 해줘야 로그인 가능하게끔
+    //     if (!user.getIsActive()) {
+    //         throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
+    //     }
+
+    //     // JWT 토큰 생성
+    //     UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+    //     String accessToken = jwtUtil.generateToken(userDetails);
+    //     String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+
+    //     user.updateRefreshToken(refreshToken);
+    //     userRepository.save(user);
+
+    //     return UserDto.LoginResponse.builder()
+    //             .accessToken(accessToken)
+    //             .refreshToken(refreshToken)
+    //             .build();
+    // }
+
+@Transactional
+public UserDto.LoginResponse login(UserDto.LoginRequest request) {
+    final int MAX_FAILS = 5;
+    final int LOCK_MINUTES = 15;
+
+    final String email = request.getEmail();
+    final String raw = request.getPassword();
+
+    // 선잠금 체크(존재 시에만)
+    userRepository.findByEmail(email).ifPresent(u -> {
+        if (u.isLockedNow()) throw new BusinessException(ErrorCode.AUTHENTICATION_FAILED);
+    });
+
+    try {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            new UsernamePasswordAuthenticationToken(email, raw)
+        );
+    } catch (LockedException | BadCredentialsException | UsernameNotFoundException
+             | InternalAuthenticationServiceException e) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        if (!user.getIsActive()) {
-            throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
+        // 존재하는 계정만 카운트 증가
+        if (userRepository.findByEmail(email).isPresent()) {
+            int count = loginAuditService.failAndGetCount(email); // ← REQUIRES_NEW
+            if (count >= MAX_FAILS) {
+                loginAuditService.lock(email, LOCK_MINUTES);       // ← REQUIRES_NEW
+            }
         }
-
-        // JWT 토큰 생성
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        String accessToken = jwtUtil.generateToken(userDetails);
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
-
-        user.updateRefreshToken(refreshToken);
-        userRepository.save(user);
-
-        return UserDto.LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        throw new BusinessException(ErrorCode.AUTHENTICATION_FAILED);
     }
+
+    // 성공 → 리셋 (REQUIRES_NEW)
+    loginAuditService.reset(email);
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new BusinessException(ErrorCode.AUTHENTICATION_FAILED));
+
+    if (!user.getIsActive()) {
+        throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
+    }
+
+    UserDetails ud = userDetailsService.loadUserByUsername(email);
+    String access = jwtUtil.generateToken(ud);
+    String refresh = jwtUtil.generateRefreshToken(ud);
+
+    user.updateRefreshToken(refresh);
+    userRepository.save(user);
+
+    return UserDto.LoginResponse.builder()
+            .accessToken(access)
+            .refreshToken(refresh)
+            .build();
+}
 
     @Transactional
     public UserDto.LoginResponse refreshToken(UserDto.RefreshTokenRequest request) {
@@ -292,7 +349,7 @@ public class UserService {
 
         passwordResetTokenRepository.save(resetToken);
 
-        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+        String resetLink = "${DOMAIN_NAME}/reset-password?token=" + token;
 
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink); // 아래에서 구현
     }
@@ -315,4 +372,5 @@ public class UserService {
 
         passwordResetTokenRepository.delete(token);
     }
+
 }

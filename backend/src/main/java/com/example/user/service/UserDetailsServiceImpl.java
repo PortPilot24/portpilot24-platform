@@ -21,16 +21,23 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        com.example.user.domain.User u = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        boolean accountNonLocked = !u.isLockedNow();
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .authorities(authorities)
-                .build();
+        // 권한
+        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name()));
+
+    return org.springframework.security.core.userdetails.User
+        .withUsername(u.getEmail())
+        .password(u.getPasswordHash())     // ← 해시 컬럼!
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name())))
+        .accountExpired(false)
+        .credentialsExpired(false)
+        .disabled(false)
+        .accountLocked(!accountNonLocked)  // ← 중요: 잠김이면 true
+        .build();
     }
 }
+

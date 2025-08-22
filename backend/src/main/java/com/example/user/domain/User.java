@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,4 +66,38 @@ public class User {
     public void updatePassword(String encodedPassword) {
         this.passwordHash = encodedPassword;
     }
+
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts = 0;
+    @Column(name = "lockout_until")
+    private LocalDateTime lockoutUntil;
+    @Column(name = "last_failed_login")
+    private LocalDateTime lastFailedLogin;
+
+        // ✅ 회원가입 전용 생성 팩토리
+    public static User createForSignup(
+            String email,
+            String name,
+            String passwordHash,
+            Role role,
+            String affiliation,
+            boolean agreeTerms
+    ) {
+        User u = new User();
+        u.email = email;
+        u.name = name;
+        u.passwordHash = passwordHash;
+        u.role = role;
+        u.affiliation = affiliation;
+        u.isTermsAgreed = agreeTerms;
+        u.isActive = false;                 // 기본: 미승인
+        u.failedLoginAttempts = 0;          // 기본: 0
+        return u;
+    }
+
+
+    public boolean isLockedNow() {
+        return lockoutUntil != null && lockoutUntil.isAfter(LocalDateTime.now());
+    }
+
 }
