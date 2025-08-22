@@ -28,24 +28,36 @@ function LoginPage() {
     event.preventDefault();
     setLoading(true); // 로딩 시작
 
-    try {
+try {
       await login(email, password);
       showNotification('로그인 되었습니다.', 'success');
       navigate('/dashboard');
     } catch (error) {
-      const status = error.response?.status;
+      // ==== 핵심: 응답 본문 우선으로 상태/메시지 추출 ====
+      const res = error?.response;
+      const data = res?.data ?? {};
+      // 바디의 status가 있으면 그걸 우선, 없으면 HTTP status 사용. 문자열이면 숫자로 변환
+      const raw = (data?.status ?? res?.status);
+      const status = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw) || 0;
+      // 서버가 준 메시지가 있으면 우선 사용
+      // const serverMsg = (typeof data?.message === 'string' && data.message.trim())
+      //   ? data.message.trim()
+      //   : undefined;
 
-      if (status === 401) {
-        showNotification('이메일 또는 비밀번호가 일치하지 않습니다.', 'error');
+      if (status === 423) {
+        showNotification('계정이 잠겼습니다. 잠시 후 다시 시도하세요.', 'warning');
       } else if (status === 403) {
         showNotification('관리자 승인 후 로그인할 수 있습니다.', 'warning');
+      } else if (status === 401) {
+        showNotification('이메일 또는 비밀번호가 일치하지 않습니다.', 'error');
       } else {
         showNotification('로그인 중 오류가 발생했습니다.', 'error');
       }
 
-      console.error('Login error:', error);
+      // 디버깅에 도움됨
+      console.error('Login error parsed:', { status, data, httpStatus: res?.status });
     } finally {
-      setLoading(false); // 로딩 종료 
+      setLoading(false);
     }
   };
 
